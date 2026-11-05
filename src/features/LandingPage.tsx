@@ -54,13 +54,13 @@ export function LandingPage() {
           <div className="mx-auto max-w-[1440px] px-5 md:px-10 lg:px-16">
             <motion.div {...reveal} className="grid gap-8 lg:grid-cols-2 lg:gap-20">
               <h2 className="font-display text-[clamp(2.5rem,5vw,5rem)] font-semibold leading-[1] tracking-[-0.045em]">One place for the whole game.</h2>
-              <p className="max-w-[530px] self-end text-base leading-7 text-muted md:text-lg">Browse turfs and courts, choose a date and time, then book for yourself or your team. Captains can manage players and requests; team members can see bookings and pay their equal demo share.</p>
+              <p className="max-w-[530px] self-end text-base leading-7 text-muted md:text-lg">Explore Manjalpur Sports courts and turf, choose a date and time, then book for yourself or your team. Captains can manage players and requests; team members can see bookings and pay their equal demo share.</p>
             </motion.div>
             <div className="mt-16 grid gap-10 md:grid-cols-3">
               {[
                 { title: 'For players', image: '/images/turf_1.jpg', text: 'Find available playing time and keep your upcoming bookings close.' },
                 { title: 'For captains', image: '/images/turf_2.jpg', text: 'Create a team, welcome players, and book for the group.' },
-                { title: 'For venue owners', image: '/images/turf_3.jpg', text: 'Add turf photos, manage slots, and view bookings in the admin area.' },
+                { title: 'For the owner', image: '/images/turf_3.jpg', text: 'Manage venue photos, sports, slots, and bookings in the admin area.' },
               ].map((item) => <motion.article {...reveal} key={item.title} className="grid gap-4">
                 <img src={item.image} alt="" loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />
                 <h3 className="font-display text-2xl font-semibold">{item.title}</h3>
@@ -112,7 +112,7 @@ export function LandingPage() {
             <img src="/images/turf_6.jpg" alt="Sports turf ready for a game" loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />
             <div>
               <h2 className="font-display text-[clamp(2.5rem,5vw,5rem)] font-semibold leading-[1] tracking-[-0.045em]">About Manjalpur Sports</h2>
-              <p className="mt-7 text-base leading-7 text-muted md:text-lg">We are Manjalpur Sports, a demo sports community built around a simple idea: playing together should be easier to organise. SportsSync brings local players, team captains, and venues into one booking experience.</p>
+              <p className="mt-7 text-base leading-7 text-muted md:text-lg">We are Manjalpur Sports, a demo sports community built around a simple idea: playing together should be easier to organise. SportsSync brings local players, team captains, and the Manjalpur Sports owner in one booking experience.</p>
               <p className="mt-5 text-base leading-7 text-muted">Choose a sport, find a time, invite your squad, and track the plan from booking to game day.</p>
             </div>
           </motion.div>

@@ -59,7 +59,6 @@ export function HomePage() {
   );
 
   const featured = turfs?.slice(0, 4) ?? [];
-  const allTurfs = turfs ?? [];
 
   const firstName = user?.full_name.split(' ')[0] ?? 'Player';
 
@@ -75,7 +74,7 @@ export function HomePage() {
             <h3 className="font-display text-[18px] font-semibold text-text">Hey, {firstName} 👋</h3>
             <p className="flex items-center gap-1 text-[12px] text-muted">
               <MapPin size={11} aria-hidden />
-              {player?.city ?? 'Ahmedabad'}
+              {player?.city ?? 'Vadodara'}
             </p>
           </div>
         </div>
@@ -97,8 +96,8 @@ export function HomePage() {
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search turfs, sports, areas"
-            aria-label="Search turfs"
+            placeholder="Search sports at Manjalpur Sports"
+            aria-label="Search sports and venue"
             className="h-14 w-full rounded-2xl border border-line bg-elevated pl-11 pr-4 text-[14px] text-text placeholder:text-muted/60 focus:outline-none focus:ring-[1.5px] focus:ring-primary"
           />
         </div>
@@ -166,8 +165,8 @@ export function HomePage() {
       </section>
 
       {/* Featured */}
-      <section aria-label="Featured turfs">
-        <SectionHeader title="Featured near you" href="/home/turfs" />
+      <section aria-label="Manjalpur Sports">
+        <SectionHeader title="Play at Manjalpur Sports" href="/home/turfs" />
         {isLoading ? (
           <div className="no-scrollbar flex gap-4 overflow-x-auto px-5">
             {[1, 2, 3].map((i) => (
@@ -183,7 +182,7 @@ export function HomePage() {
         ) : featured.length === 0 ? (
           <EmptyState
             icon={Search}
-            title="No turfs found"
+            title="No availability found"
             message="Try a different sport or clear your filters."
             action={<PrimaryButton variant="outline" onClick={() => { setSelectedSport(null); setSearch(''); }}>Clear filters</PrimaryButton>}
           />
@@ -236,22 +235,6 @@ export function HomePage() {
           </div>
         </section>
       )}
-
-      {/* All turfs */}
-      <section aria-label="All turfs">
-        <SectionHeader title="All turfs" href="/home/turfs" />
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 w-full rounded-[20px]" />)}
-          </div>
-        ) : allTurfs.length === 0 ? (
-          <EmptyState icon={Search} title="Nothing here yet" message="No turfs match your search." />
-        ) : (
-          <div className="space-y-3">
-            {allTurfs.map((t) => <TurfCard key={t.turf_id} turf={t} horizontal />)}
-          </div>
-        )}
-      </section>
 
       {/* Filter sheet */}
       <BottomSheet open={filterOpen} onClose={() => setFilterOpen(false)} title="Filters">

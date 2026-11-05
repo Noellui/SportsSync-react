@@ -1,6 +1,6 @@
 # SportsSync
 
-SportsSync is a React, TypeScript, Vite demo for sports turf booking and team building. It uses local mock data and browser storage; no backend or real payment service is involved.
+SportsSync is a React, TypeScript, Vite demo for booking sports at one Manjalpur Sports venue and team building. It uses local mock data and browser storage; no backend or real payment service is involved.
 
 ## Run locally
 
@@ -20,15 +20,15 @@ Demo accounts:
 | Role | Email | Password |
 | --- | --- | --- |
 | Player | `noellouis2005@gmail.com` | `12345` |
-| Admin | `admin@sportssync.com` | `admin123` |
+| Venue owner (admin) | `admin@sportssync.com` | `admin123` |
 
-New accounts created through Register are also available locally in that browser.
+New player accounts created through Register are also available locally in that browser. The venue owner account is seeded; public registration cannot create another admin.
 
-Players can change their profile photo from Profile. Admins can upload turf photos when adding or editing a turf, choose a primary photo, and remove photos. Uploads accept JPEG, PNG, or WebP files up to 5 MB each. Photos are resized and saved in this browser's local storage along with the demo data, so they do not sync to another device or browser.
+Players can change their profile photo from Profile. The venue owner can upload photos when editing Manjalpur Sports, choose a primary photo, and remove photos. Uploads accept JPEG, PNG, or WebP files up to 5 MB each. Photos are resized and saved in this browser's local storage along with the demo data, so they do not sync to another device or browser.
 
 ## Mock data
 
-The initial dataset is defined in `src/data/mock/seed.ts`. All demo players and venues are in Ahmedabad. Dates are calculated when the app loads, so upcoming bookings and slots stay relative to the current day.
+The initial dataset is defined in `src/data/mock/seed.ts`. The demo venue is Manjalpur Sports in Manjalpur, Vadodara. Dates are calculated when the app loads, so upcoming bookings and slots stay relative to the current day.
 
 ### Players
 
@@ -43,20 +43,15 @@ The main player account is Noel Louis (Football, intermediate). Six more player 
 | Rohan Mehta | `rohan.m@example.com` | Tennis | Intermediate |
 | Sana Khan | `sana.k@example.com` | Pickleball | Beginner |
 
-### Sports and venues
+### Sports and venue
 
-The six sports are Football, Cricket, Basketball, Badminton, Tennis, and Pickleball. Every venue has opening hours of 06:00–23:00.
+Manjalpur Sports offers Football, Cricket, Basketball, Badminton, Tennis, and Pickleball. It opens from 06:00–23:00. The address shown in the demo is fictional. The owner can edit the venue, its sports, photos, hours, and availability, or mark it inactive.
 
 | Venue | Area | Sports | Status |
 | --- | --- | --- | --- |
-| Green Arena | Satellite | Football | Active |
-| Striker's Den | Bopal | Football, Cricket | Active |
-| Dunk Dome | SG Highway | Basketball, Pickleball | Active |
-| Smash Court | Prahlad Nagar | Badminton, Tennis | Active |
-| Pitch Perfect | Maninagar | Cricket, Football | Maintenance |
-| Night Owl Turf | Vastrapur | Football, Badminton, Tennis | Active |
+| Manjalpur Sports | Manjalpur, Vadodara | All six sports | Active |
 
-For active venues, the seed generates one-hour slots from 06:00 to 23:00 for the next 14 days for each supported sport. Prices start at ₹800, add ₹400 from 18:00 to 21:00, and add ₹300 on weekends. Cricket slots cost ₹200 less, with a ₹600 minimum; all slots have a ₹1,800 maximum. About 30% of generated slots are marked booked. The maintenance venue has no generated slots.
+The seed generates one-hour slots from 06:00 to 23:00 for the next 14 days for each supported sport. Prices start at ₹800, add ₹400 from 18:00 to 21:00, and add ₹300 on weekends. Cricket slots cost ₹200 less, with a ₹600 minimum; all slots have a ₹1,800 maximum. About 30% of generated slots are marked booked.
 
 ### Bookings and payments
 
@@ -64,12 +59,12 @@ Noel's account starts with six bookings:
 
 | Booking | Venue and sport | Timing | Status | Booking amount |
 | --- | --- | --- | --- | ---: |
-| `b_up1` | Green Arena, Football | In 2 days, 18:00–20:00 | Confirmed | ₹3,200 |
-| `b_up2` | Night Owl Turf, Football | In 5 days, 20:00–21:00 | Confirmed | ₹1,500 |
-| `b_done1` | Striker's Den, Cricket | 6 days ago, 17:00–18:00 | Completed | ₹1,200 |
-| `b_done2` | Smash Court, Badminton | 12 days ago, 19:00–20:00 | Completed | ₹900 |
-| `b_done3` | Night Owl Turf, Football | 20 days ago, 18:00–19:00 | Completed | ₹2,600 |
-| `b_cancel1` | Green Arena, Football | 3 days ago, 18:00–19:00 | Cancelled | ₹1,400 |
+| `b_up1` | Manjalpur Sports, Football | In 2 days, 18:00–20:00 | Confirmed | ₹3,200 |
+| `b_up2` | Manjalpur Sports, Football | In 5 days, 20:00–21:00 | Confirmed | ₹1,500 |
+| `b_done1` | Manjalpur Sports, Cricket | 6 days ago, 17:00–18:00 | Completed | ₹1,200 |
+| `b_done2` | Manjalpur Sports, Badminton | 12 days ago, 19:00–20:00 | Completed | ₹900 |
+| `b_done3` | Manjalpur Sports, Football | 20 days ago, 18:00–19:00 | Completed | ₹2,600 |
+| `b_cancel1` | Manjalpur Sports, Football | 3 days ago, 18:00–19:00 | Cancelled | ₹1,400 |
 
 Each booking has a matching mock payment. The examples cover UPI, card, and wallet methods; the cancelled booking's payment is marked refunded. These are demonstration records and no money is transferred.
 
@@ -78,7 +73,7 @@ Each booking has a matching mock payment. The examples cover UPI, card, and wall
 | Team | Sport | Captain | Members | Status |
 | --- | --- | --- | ---: | --- |
 | Friday Night Strikers | Football | Noel Louis | 4/10 | Open |
-| Ahmedabad Overs | Cricket | Aarav Patel | 3/8 | Open |
+| Manjalpur Overs | Cricket | Aarav Patel | 3/8 | Open |
 | Smash Sisters | Badminton | Ishita Rao | 6/6 | Full |
 | Dunk Squad | Basketball | Meera Joshi | 2/10 | Closed |
 
@@ -92,7 +87,7 @@ To try another member's payment, sign out and sign in as that seeded player in t
 
 ### Resetting the demo data
 
-Changes are saved in browser local storage under `sportssync_db_v1`. To restore the original seed, remove that key in your browser's developer tools and reload the app. Remove `sportssync_session` too if you also want to sign out. Mock account passwords are stored as plain values for this local demo.
+Changes are saved in browser local storage under `sportssync_db_v1`. Existing browser data from the former multi-venue demo is migrated to one venue on first load, keeping accounts, teams, bookings, payments, and uploaded venue photos. To restore the original seed, remove that key in your browser's developer tools and reload the app. Remove `sportssync_session` too if you also want to sign out. Mock account passwords are stored as plain values for this local demo.
 
 ## Checks
 

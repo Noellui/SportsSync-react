@@ -91,7 +91,7 @@ export function LoginPage() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="mt-3 text-[15px] text-muted max-[700px]:hidden"
           >
-            Book premium turfs, build your squad and split the bill.
+            Book a game at Manjalpur Sports, build your squad and split the bill.
           </motion.p>
         </motion.div>
 

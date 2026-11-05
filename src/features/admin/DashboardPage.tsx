@@ -26,7 +26,7 @@ function StatCard({ icon: Icon, label, value, change, color }: { icon: typeof Tr
 export function DashboardPage() {
   const { user } = useAuthStore();
   const { data: bookings = [] } = useAllBookings();
-  const { data: turfs = [] } = useTurfs();
+  const { data: turfs = [] } = useTurfs({ includeInactive: true });
 
   const { today, weekAgo, weekStart } = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -62,13 +62,13 @@ export function DashboardPage() {
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-[28px] font-bold text-text">Welcome back, {user?.full_name.split(' ')[0] ?? 'Admin'} 👋</h1>
-        <p className="mt-0.5 text-[14px] text-muted">Here's how your turfs are performing.</p>
+        <p className="mt-0.5 text-[14px] text-muted">Here's how your venue is performing.</p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={CalendarCheck} label="Today's bookings" value={todaysBookings} change="+12% vs yesterday" color="#B6FF3B" />
         <StatCard icon={DollarSign} label="Revenue this week" value={inr(weeklyRevenue)} change="+8% vs last week" color="#2EE6A6" />
-        <StatCard icon={Building2} label="Active turfs" value={activeTurfs} change={turfs.length > activeTurfs ? `${turfs.length - activeTurfs} inactive` : undefined} color="#3DDC84" />
+        <StatCard icon={Building2} label="Active venue" value={activeTurfs} change={turfs.length > activeTurfs ? `${turfs.length - activeTurfs} inactive` : undefined} color="#3DDC84" />
         <StatCard icon={CalendarCheck} label="Occupancy" value={`${occupancy}%`} color="#FFB84D" />
       </div>
 

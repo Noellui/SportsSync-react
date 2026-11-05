@@ -8,7 +8,7 @@ import { Logo } from '../../core/components/Logo';
 
 const tabs = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/admin/turfs', label: 'Turfs', icon: Building2 },
+  { to: '/admin/turfs', label: 'Venue', icon: Building2 },
   { to: '/admin/slots', label: 'Slots', icon: CalendarCheck },
   { to: '/admin/bookings', label: 'Bookings', icon: User },
   { to: '/admin/profile', label: 'Profile', icon: User },

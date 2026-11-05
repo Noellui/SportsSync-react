@@ -19,6 +19,7 @@ export interface TurfQuery {
   query?: string;
   minRating?: number;
   maxPrice?: number;
+  includeInactive?: boolean;
 }
 
 export interface CreateTurfInput {
@@ -51,7 +52,7 @@ export const turfRepository: TurfRepository = {
   async getTurfs(q = {}) {
     return withTimeout((async () => {
       await delay(simulateLatency());
-      let list = db.turfs.filter((t) => t.turf_status === 'active');
+      let list = q.includeInactive ? db.turfs : db.turfs.filter((t) => t.turf_status === 'active');
       if (q.city) list = list.filter((t) => t.city.toLowerCase().includes(q.city!.toLowerCase()));
       if (q.sportId) {
         const ids = new Set(db.turfSports.filter((ts) => ts.sport_id === q.sportId).map((ts) => ts.turf_id));
@@ -96,6 +97,7 @@ export const turfRepository: TurfRepository = {
   async createTurf(adminId, input) {
     return withTimeout((async () => {
       await delay(simulateLatency());
+      if (db.turfs.length > 0) throw new Error('SportsSync supports one venue for its owner');
       const turf: Turf = {
         turf_id: randId('t'),
         admin_id: adminId,
@@ -153,6 +155,7 @@ export const turfRepository: TurfRepository = {
   async deleteTurf(id) {
     await withTimeout((async () => {
       await delay(simulateLatency());
+      if (db.turfs.length <= 1) throw new Error('Cannot delete the only venue');
       db.turfs = db.turfs.filter((t) => t.turf_id !== id);
       db.turfImages = db.turfImages.filter((i) => i.turf_id !== id);
       db.turfSports = db.turfSports.filter((ts) => ts.turf_id !== id);

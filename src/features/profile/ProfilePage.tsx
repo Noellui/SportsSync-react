@@ -70,7 +70,7 @@ export function ProfilePage() {
           <span className="rounded-full bg-primary/15 px-3 py-1 text-[11px] font-semibold uppercase text-primary">
             {player?.skill_level ?? 'beginner'}
           </span>
-          <span className="text-[12px] text-muted">{player?.city ?? 'Ahmedabad'}</span>
+          <span className="text-[12px] text-muted">{player?.city ?? 'Vadodara'}</span>
         </div>
       </div>
 
@@ -197,7 +197,7 @@ export function EditProfileForm({ onClose }: { onClose: () => void }) {
         <input
           value={form.city}
           onChange={(e) => setForm({ ...form, city: e.target.value })}
-          placeholder="Ahmedabad"
+          placeholder="Vadodara"
           className="h-12 w-full rounded-2xl border border-line bg-elevated px-4 text-[15px] text-text"
         />
       </div>

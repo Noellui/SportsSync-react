@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { authRepository } from './authRepository';
 import { teamRepository } from './teamRepository';
-import { db, resetDB } from './db';
+import { db, resetDB, migrateSingleVenue } from './db';
 import { turfRepository } from './turfRepository';
 import { addDays, format } from 'date-fns';
 
@@ -12,6 +12,55 @@ describe('demo flows', () => {
     expect((await authRepository.login('noellouis2005@gmail.com', '12345')).user.role).toBe('player');
     expect((await authRepository.login('admin@sportssync.com', 'admin123')).user.role).toBe('admin');
     await expect(authRepository.login('noellouis2005@gmail.com', 'wrong')).rejects.toThrow('Incorrect email or password');
+  });
+
+  it('seeds one Manjalpur Sports venue with all six sports for the owner admin', () => {
+    expect(db.admins).toHaveLength(1);
+    expect(db.turfs).toHaveLength(1);
+    expect(db.turfs[0].turf_name).toBe('Manjalpur Sports');
+    expect(db.turfs[0].city).toBe('Vadodara');
+    expect(db.turfSports.filter((item) => item.turf_id === db.turfs[0].turf_id)).toHaveLength(6);
+    expect(db.bookings.every((booking) => booking.slot_ids.every((slotId) => db.slots.find((slot) => slot.slot_id === slotId)?.turf_id === db.turfs[0].turf_id))).toBe(true);
+  });
+
+  it('does not let public registration create another owner admin', async () => {
+    await expect(authRepository.register({ full_name: 'Another Owner', email: 'owner2@example.com', phone_number: '1234567890', password: 'secret', role: 'admin' })).rejects.toThrow('owner');
+    expect(db.admins).toHaveLength(1);
+  });
+
+  it('keeps the sole venue while allowing its owner to edit it', async () => {
+    await expect(turfRepository.createTurf('a_1', {
+      turf_name: 'Second venue', description: '', address: '', city: 'Vadodara', opening_time: '06:00', closing_time: '23:00', sport_ids: ['s_football'], image_urls: [], primary_image: '',
+    })).rejects.toThrow('one venue');
+    await expect(turfRepository.deleteTurf('t_1')).rejects.toThrow('only venue');
+    await turfRepository.updateTurf('t_1', { description: 'Updated owner description' });
+    expect(db.turfs).toHaveLength(1);
+    expect(db.turfs[0].description).toBe('Updated owner description');
+  });
+
+  it('keeps an inactive venue visible to the owner but hidden from players', async () => {
+    await turfRepository.updateTurf('t_1', { turf_status: 'inactive' });
+    expect(await turfRepository.getTurfs()).toHaveLength(0);
+    expect((await turfRepository.getTurfs({ includeInactive: true })).map((turf) => turf.turf_id)).toEqual(['t_1']);
+  });
+
+  it('migrates old browser data without losing bookings or uploaded photos', () => {
+    const old = structuredClone(db);
+    const canonical = old.slots.find((slot) => slot.turf_id === 't_1' && slot.sport_id === 's_football')!;
+    canonical.slot_status = 'available';
+    old.turfs.push({ ...old.turfs[0], turf_id: 't_2', turf_name: 'Legacy venue' });
+    old.turfImages.push({ image_id: 'legacy_photo', turf_id: 't_2', image_url: 'data:image/png;base64,photo', is_primary: true, uploaded_at: '2026-01-01' });
+    old.slots.push({ ...canonical, slot_id: 'legacy_slot', turf_id: 't_2', slot_status: 'booked' });
+    old.bookings.push({ ...old.bookings[0], booking_id: 'legacy_booking', slot_id: 'legacy_slot', slot_ids: ['legacy_slot'] });
+    const userCount = old.users.length;
+
+    const migrated = migrateSingleVenue(old);
+    expect(migrated.turfs.map((turf) => turf.turf_name)).toEqual(['Manjalpur Sports']);
+    expect(migrated.users).toHaveLength(userCount);
+    expect(migrated.bookings.some((booking) => booking.booking_id === 'legacy_booking')).toBe(true);
+    expect(migrated.slots.find((slot) => slot.slot_id === 'legacy_slot')).toBeDefined();
+    expect(migrated.slots.find((slot) => slot.slot_id === canonical.slot_id)?.slot_status).toBe('booked');
+    expect(migrated.turfImages.find((image) => image.image_id === 'legacy_photo')?.turf_id).toBe('t_1');
   });
 
   it('creates a team with the creator as captain', async () => {
