@@ -5,6 +5,7 @@ import type { Turf } from '../models/turf';
 import type { TurfImage } from '../models/turfImage';
 import type { TurfSlot } from '../models/turfSlot';
 import { format, addDays } from 'date-fns';
+import { seedSlots } from '../mock/seed';
 
 export interface TurfWithExtras extends Turf {
   images: TurfImage[];
@@ -82,6 +83,9 @@ export const turfRepository: TurfRepository = {
     return withTimeout((async () => {
       expireHolds();
       await delay(simulateLatency());
+      const existingIds = new Set(db.slots.map((slot) => slot.slot_id));
+      const missing = seedSlots().filter((slot) => !existingIds.has(slot.slot_id) && db.turfs.some((turf) => turf.turf_id === slot.turf_id && turf.turf_status === 'active'));
+      if (missing.length) { db.slots.push(...missing); persistDB(); }
       return db.slots
         .filter((s) => s.turf_id === turfId && s.slot_date === date && (!sportId || s.sport_id === sportId))
         .sort((a, b) => a.start_time.localeCompare(b.start_time))
@@ -199,3 +203,6 @@ export const turfRepository: TurfRepository = {
 
 export const next7Days = (): string[] =>
   Array.from({ length: 7 }, (_, i) => format(addDays(new Date(), i), 'yyyy-MM-dd'));
+
+export const nextBookingDays = (): string[] =>
+  Array.from({ length: 14 }, (_, i) => format(addDays(new Date(), i), 'yyyy-MM-dd'));

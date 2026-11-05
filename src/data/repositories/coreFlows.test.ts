@@ -3,6 +3,7 @@ import { authRepository } from './authRepository';
 import { teamRepository } from './teamRepository';
 import { db, resetDB } from './db';
 import { turfRepository } from './turfRepository';
+import { addDays, format } from 'date-fns';
 
 describe('demo flows', () => {
   beforeEach(() => resetDB());
@@ -51,6 +52,20 @@ describe('demo flows', () => {
     const after = await turfRepository.getSlots(slot.turf_id, slot.slot_date, slot.sport_id);
     expect(before.find((item) => item.slot_id === slot.slot_id)?.slot_status).toBe('available');
     expect(after.find((item) => item.slot_id === slot.slot_id)?.slot_status).toBe('blocked');
+  });
+
+  it('restores missing demo slots across the next two weeks without replacing existing statuses', async () => {
+    const tomorrow = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const nextWeek = format(addDays(new Date(), 10), 'yyyy-MM-dd');
+    const existing = db.slots.find((slot) => slot.turf_id === 't_1' && slot.sport_id === 's_football' && slot.slot_date === tomorrow)!;
+    existing.slot_status = 'blocked';
+    db.slots = db.slots.filter((slot) => slot.slot_date !== nextWeek);
+
+    const tomorrowSlots = await turfRepository.getSlots('t_1', tomorrow, 's_football');
+    const nextWeekSlots = await turfRepository.getSlots('t_1', nextWeek, 's_football');
+    expect(tomorrowSlots.find((slot) => slot.slot_id === existing.slot_id)?.slot_status).toBe('blocked');
+    expect(nextWeekSlots.length).toBeGreaterThan(0);
+    expect(nextWeekSlots.some((slot) => slot.slot_status === 'available')).toBe(true);
   });
 
   it('keeps venue and time data for completed and cancelled demo bookings', () => {
