@@ -1,7 +1,7 @@
 import { format, differenceInDays, parseISO } from 'date-fns';
 
 export const inr = (n: number) =>
-  '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 });
 
 export const formatTime = (hhmm: string) => {
   const [h, m] = hhmm.split(':').map(Number);

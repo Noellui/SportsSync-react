@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, UserPlus, Crown } from 'lucide-react';
+import { ArrowLeft, UserPlus, Crown, CalendarCheck } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useTeam, useRespondToRequest, useSendJoinRequest } from '../../data/store/hooks';
+import { useTeam, useRespondToRequest, useSendJoinRequest, useMyBookings } from '../../data/store/hooks';
 import { useAuthStore } from '../../data/store/authStore';
 import { db } from '../../data/repositories/db';
-import { formatDateShort } from '../../core/utils/format';
+import { formatDateShort, inr } from '../../core/utils/format';
+import { teamShareAmount } from '../../data/repositories/bookingRepository';
 import { Skeleton } from '../../core/components/Skeleton';
 import { ErrorState } from '../../core/components/ErrorState';
 import { PrimaryButton } from '../../core/components/PrimaryButton';
@@ -34,6 +35,7 @@ export function TeamDetailPage() {
   const [tab, setTab] = useState<'members' | 'requests'>('members');
 
   const { data: team, isLoading, isError, refetch, error } = useTeam(id);
+  const { data: bookings = [] } = useMyBookings();
   const sendRequest = useSendJoinRequest();
   const respond = useRespondToRequest();
 
@@ -41,6 +43,7 @@ export function TeamDetailPage() {
   if (isError || !team) return <ErrorState message={error?.message ?? 'Team not found'} onRetry={() => refetch()} />;
 
   const isMember = team.members.some((m) => m.user_id === user?.user_id);
+  const teamBookings = bookings.filter((booking) => booking.team_id === team.team_id && (booking.booking_status === 'pending' || booking.booking_status === 'confirmed'));
   const captainName = nameFor(team.captain_user_id);
 
   const send = async () => {
@@ -88,6 +91,15 @@ export function TeamDetailPage() {
 
       <div className="space-y-5 px-5 pt-4">
         <p className="text-[14px] leading-relaxed text-muted">{team.description}</p>
+
+        {isMember && teamBookings.length > 0 && <div className="space-y-2">
+          <h2 className="font-display text-[17px] font-semibold text-text">Team bookings</h2>
+          {teamBookings.map((booking) => <button key={booking.booking_id} type="button" onClick={() => navigate(`/home/bookings?bookingId=${encodeURIComponent(booking.booking_id)}`)} className="flex w-full items-center gap-3 rounded-2xl border border-line bg-surface/60 p-3 text-left">
+            <CalendarCheck size={20} className="text-primary" aria-hidden />
+            <span className="min-w-0 flex-1"><span className="block truncate text-[14px] font-semibold text-text">{booking.turf_name}</span><span className="block text-[11px] text-muted">{booking.slots[0] ? formatDateShort(booking.slots[0].slot_date) : 'Upcoming'} · {booking.booking_status}</span></span>
+            <span className="text-right text-[12px] font-semibold text-primary">{user ? inr(teamShareAmount(booking, user.user_id)) : ''}<span className="block text-[10px] text-muted">{booking.paid_user_ids?.includes(user?.user_id ?? '') ? 'Paid' : 'Tap to pay'}</span></span>
+          </button>)}
+        </div>}
 
         <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface/60 p-3.5">
           <img src={avatarFor(team.captain_user_id)} alt="" className="h-11 w-11 rounded-full object-cover" />
@@ -174,14 +186,14 @@ export function TeamDetailPage() {
             Join this team
           </PrimaryButton>
         )}
-          <PrimaryButton
+        {user?.user_id === team.captain_user_id && <PrimaryButton
           variant="outline"
           size="lg"
           full
-          onClick={() => navigate(`/home/turfs?players=${Math.max(1, team.member_count)}`)}
+          onClick={() => navigate(`/home/turfs?teamId=${encodeURIComponent(team.team_id)}`)}
         >
-          Book a turf for this team
-        </PrimaryButton>
+          Book a turf for {team.member_count} team members
+        </PrimaryButton>}
       </div>
 
       <BottomSheet open={joinOpen} onClose={() => setJoinOpen(false)} title={`Join ${team.team_name}`}>

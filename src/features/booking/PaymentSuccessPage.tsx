@@ -51,7 +51,7 @@ export function PaymentSuccessPage() {
         transition={{ delay: 0.45 }}
         className="mt-1 text-[14px] text-muted"
       >
-        {booking?.booking_status === 'pending' ? 'Collect the remaining shares within 10 minutes to confirm.' : 'Your turf is locked in. See you on the pitch.'}
+        {booking?.booking_status === 'pending' ? (booking.team_id ? 'Team members can pay their shares from My bookings within 10 minutes.' : 'Collect the remaining shares within 10 minutes to confirm.') : 'Your turf is locked in. See you on the pitch.'}
       </motion.p>
 
       {/* Ticket card */}

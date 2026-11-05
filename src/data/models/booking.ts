@@ -5,6 +5,9 @@ export type BookingStatus = 'confirmed' | 'pending' | 'cancelled' | 'completed';
 export const bookingSchema = z.object({
   booking_id: z.string(),
   player_id: z.string(),
+  team_id: z.string().optional(),
+  participant_user_ids: z.array(z.string()).optional(),
+  paid_user_ids: z.array(z.string()).optional(),
   slot_id: z.string(),
   slot_ids: z.array(z.string()).default([]),
   booking_date: z.string(),

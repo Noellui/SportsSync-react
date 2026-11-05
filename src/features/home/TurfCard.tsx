@@ -15,8 +15,7 @@ export function TurfCard({
   layoutId?: string;
 }) {
   const location = useLocation();
-  const players = new URLSearchParams(location.search).get('players');
-  const destination = `/home/turf/${turf.turf_id}${players ? `?players=${encodeURIComponent(players)}` : ''}`;
+  const destination = `/home/turf/${turf.turf_id}${location.search}`;
   const img = turf.images.find((i) => i.is_primary)?.image_url ?? turf.images[0]?.image_url ?? '';
   const area = turf.address.split(',')[0];
 

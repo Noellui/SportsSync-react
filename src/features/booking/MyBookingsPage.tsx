@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CalendarCheck, X, MapPin } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useMyBookings, useCancelBooking, useCollectShare } from '../../data/store/hooks';
+import { useMyBookings, useCancelBooking, useCollectShare, usePayTeamShare } from '../../data/store/hooks';
+import { useAuthStore } from '../../data/store/authStore';
 import { inr, formatDateLong, formatTime, countdownLabel } from '../../core/utils/format';
 import { SectionHeader } from '../../core/components/SectionHeader';
 import { Skeleton } from '../../core/components/Skeleton';
@@ -12,7 +13,8 @@ import { EmptyState } from '../../core/components/EmptyState';
 import { PrimaryButton } from '../../core/components/PrimaryButton';
 import { StatusChip, bookingTone } from '../../core/components/StatusChip';
 import { BottomSheet } from '../../core/components/BottomSheet';
-import type { BookingWithDetails } from '../../data/repositories/bookingRepository';
+import { teamShareAmount, type BookingWithDetails } from '../../data/repositories/bookingRepository';
+import type { PaymentMethod } from '../../data/models/payment';
 
 type Tab = 'upcoming' | 'completed' | 'cancelled';
 const tabs: { id: Tab; label: string }[] = [
@@ -23,7 +25,7 @@ const tabs: { id: Tab; label: string }[] = [
 
 const cancelReasons = ['Rain forecast', 'Team conflict', 'Injury / medical', 'Change of plans', 'Too expensive'];
 
-function BookingCard({ booking, onOpen }: { booking: BookingWithDetails; onOpen: () => void }) {
+function BookingCard({ booking, userId, onOpen }: { booking: BookingWithDetails; userId?: string; onOpen: () => void }) {
   const slot = booking.slots[0];
   return (
     <button
@@ -37,7 +39,7 @@ function BookingCard({ booking, onOpen }: { booking: BookingWithDetails; onOpen:
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-display text-[15px] font-semibold text-text">{booking.turf_name}</p>
-            <p className="text-[12px] text-muted">{booking.sport_name}</p>
+            <p className="text-[12px] text-muted">{booking.team_name ? `${booking.team_name} · ` : ''}{booking.sport_name}</p>
           </div>
           <StatusChip tone={bookingTone(booking.booking_status)}>{booking.booking_status}</StatusChip>
         </div>
@@ -46,7 +48,8 @@ function BookingCard({ booking, onOpen }: { booking: BookingWithDetails; onOpen:
             {slot ? `${countdownLabel(slot.slot_date, slot.start_time)}` : ''}
           </p>
           <div className="text-right">
-            <p className="text-[13.5px] font-bold text-primary">{inr(booking.booking_amount)}</p>
+            <p className="text-[13.5px] font-bold text-primary">{inr(booking.team_id && userId ? teamShareAmount(booking, userId) : booking.booking_amount)}</p>
+            {booking.team_id && <p className="text-[11px] text-muted">Your share · {booking.paid_user_ids?.includes(userId ?? '') ? 'Paid' : 'Awaiting payment'}</p>}
             {booking.player_count > 1 && (
               <p className="text-[11px] text-muted">{inr(booking.per_player_amount)} × {booking.player_count} players</p>
             )}
@@ -58,16 +61,21 @@ function BookingCard({ booking, onOpen }: { booking: BookingWithDetails; onOpen:
 }
 
 export function MyBookingsPage() {
+  const location = useLocation();
   const [tab, setTab] = useState<Tab>('upcoming');
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(new URLSearchParams(location.search).get('bookingId'));
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reason, setReason] = useState(cancelReasons[0]);
   const [customReason, setCustomReason] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const player = useAuthStore((state) => state.player);
 
   const { data: bookings = [], isLoading, isError, refetch, error } = useMyBookings();
   const cancelBooking = useCancelBooking();
   const collectShare = useCollectShare();
+  const payTeamShare = usePayTeamShare();
 
   const filtered = bookings.filter((b) => {
     if (tab === 'upcoming') return b.booking_status === 'confirmed' || b.booking_status === 'pending';
@@ -127,7 +135,7 @@ export function MyBookingsPage() {
         />
       ) : (
         <div className="space-y-3">
-          {filtered.map((b) => <BookingCard key={b.booking_id} booking={b} onOpen={() => setOpenId(b.booking_id)} />)}
+          {filtered.map((b) => <BookingCard key={b.booking_id} booking={b} userId={user?.user_id} onOpen={() => setOpenId(b.booking_id)} />)}
         </div>
       )}
 
@@ -139,7 +147,7 @@ export function MyBookingsPage() {
               {open.turf_image && <img src={open.turf_image} alt="" className="h-16 w-16 rounded-2xl object-cover" />}
               <div className="min-w-0 flex-1">
                 <p className="font-display text-[17px] font-semibold text-text">{open.turf_name}</p>
-                <p className="text-[12.5px] text-muted">{open.sport_name}</p>
+                <p className="text-[12.5px] text-muted">{open.team_name ? `${open.team_name} · ` : ''}{open.sport_name}</p>
               </div>
               <StatusChip tone={bookingTone(open.booking_status)}>{open.booking_status}</StatusChip>
             </div>
@@ -152,6 +160,7 @@ export function MyBookingsPage() {
                 <div className="flex justify-between"><span className="text-muted">Split</span><span className="font-semibold text-primary">{inr(open.per_player_amount)} × {open.player_count} players</span></div>
               )}
               {open.player_count > 1 && <div className="flex justify-between"><span className="text-muted">Shares collected</span><span className="text-text">{open.shares_paid ?? (open.booking_status === 'confirmed' ? open.player_count : 1)} / {open.player_count}</span></div>}
+              {open.team_id && user && <div className="flex justify-between"><span className="text-muted">Your share</span><span className="font-semibold text-primary">{inr(teamShareAmount(open, user.user_id))}</span></div>}
               {open.cancellation_reason && (
                 <div className="flex justify-between gap-4"><span className="text-muted">Reason</span><span className="text-right text-danger">{open.cancellation_reason}</span></div>
               )}
@@ -167,7 +176,20 @@ export function MyBookingsPage() {
               </div>
             )}
 
-            {(open.booking_status === 'pending' || (open.collection_mode === 'full' && (open.shares_paid ?? 1) < open.player_count)) && (
+            {open.team_id && open.booking_status === 'pending' && user && !open.paid_user_ids?.includes(user.user_id) && (
+              <div className="space-y-3 rounded-2xl border border-primary/25 bg-primary/5 p-4">
+                <p className="text-[13px] text-text">Pay your share of {inr(teamShareAmount(open, user.user_id))} for this team booking.</p>
+                <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)} aria-label="Payment method" className="h-11 w-full rounded-xl border border-line bg-elevated px-3 text-text">
+                  <option value="upi">UPI</option><option value="card">Card</option><option value="wallet">Wallet</option><option value="cash">Pay at turf</option>
+                </select>
+                <PrimaryButton full loading={payTeamShare.isPending} onClick={async () => {
+                  try { await payTeamShare.mutateAsync({ bookingId: open.booking_id, method: paymentMethod }); toast.success('Your share is paid'); }
+                  catch (error) { toast.error(error instanceof Error ? error.message : 'Could not pay share'); }
+                }}>Pay {inr(teamShareAmount(open, user.user_id))}</PrimaryButton>
+              </div>
+            )}
+
+            {!open.team_id && (open.booking_status === 'pending' || (open.collection_mode === 'full' && (open.shares_paid ?? 1) < open.player_count)) && (
               <div className="space-y-2">
                 <p className="text-[12px] text-muted">{open.hold_expires_at ? `Hold expires ${new Date(open.hold_expires_at).toLocaleTimeString()}. ` : ''}Mark a teammate's share as collected after receiving it.</p>
                 <PrimaryButton full loading={collectShare.isPending} onClick={async () => {
@@ -179,7 +201,7 @@ export function MyBookingsPage() {
               </div>
             )}
 
-            {open.booking_status === 'confirmed' || open.booking_status === 'pending' ? (
+            {(open.booking_status === 'confirmed' || open.booking_status === 'pending') && (!open.team_id || open.player_id === player?.player_id) ? (
               <PrimaryButton
                 variant="danger"
                 icon={X}

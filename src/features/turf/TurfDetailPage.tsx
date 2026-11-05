@@ -14,6 +14,7 @@ import { ErrorState } from '../../core/components/ErrorState';
 import { PrimaryButton } from '../../core/components/PrimaryButton';
 import { BottomSheet } from '../../core/components/BottomSheet';
 import type { TurfSlot } from '../../data/models/turfSlot';
+import { db } from '../../data/repositories/db';
 
 const amenities = [
   { icon: Car, label: 'Parking' },
@@ -187,7 +188,9 @@ export function TurfDetailPage() {
 
   const images = turf.images.length ? turf.images : [];
   const openNow = isOpenNow(turf.opening_time, turf.closing_time);
-  const turfSports = allSports.filter((s) => turf.sport_ids.includes(s.sport_id));
+  const teamId = new URLSearchParams(location.search).get('teamId');
+  const teamSportId = db.teams.find((team) => team.team_id === teamId)?.sport_id;
+  const turfSports = allSports.filter((s) => turf.sport_ids.includes(s.sport_id) && (!teamSportId || s.sport_id === teamSportId));
 
   const onSlotsPicked = (slotIds: string[]) => {
     setPickerOpen(false);

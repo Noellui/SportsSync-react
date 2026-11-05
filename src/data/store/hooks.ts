@@ -81,9 +81,10 @@ export function useCreateBooking() {
 
 export function useCancelBooking() {
   const qc = useQueryClient();
+  const userId = useAuthStore((state) => state.user?.user_id);
   return useMutation({
     mutationFn: ({ bookingId, reason }: { bookingId: string; reason: string }) =>
-      bookingRepository.cancel(bookingId, reason),
+      bookingRepository.cancel(bookingId, reason, userId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['slots'] });
       qc.invalidateQueries({ queryKey: ['myBookings'] });
@@ -96,6 +97,20 @@ export function useCollectShare() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (bookingId: string) => bookingRepository.collectShare(bookingId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['myBookings'] });
+      qc.invalidateQueries({ queryKey: ['allBookings'] });
+      qc.invalidateQueries({ queryKey: ['booking'] });
+    },
+  });
+}
+
+export function usePayTeamShare() {
+  const qc = useQueryClient();
+  const userId = useAuthStore((state) => state.user?.user_id);
+  return useMutation({
+    mutationFn: ({ bookingId, method }: { bookingId: string; method: 'upi' | 'card' | 'wallet' | 'cash' }) =>
+      bookingRepository.payTeamShare(bookingId, userId!, method),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['myBookings'] });
       qc.invalidateQueries({ queryKey: ['allBookings'] });
