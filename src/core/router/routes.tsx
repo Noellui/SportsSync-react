@@ -60,7 +60,6 @@ export const appRouter = createBrowserRouter([
             children: [
               { index: true, element: <DashboardPage /> },
               { path: 'turfs', element: <ManageTurfsPage /> },
-              { path: 'turfs/new', element: <TurfFormPage /> },
               { path: 'turfs/:id/edit', element: <TurfFormPage /> },
               { path: 'slots', element: <ManageSlotsPage /> },
               { path: 'bookings', element: <AdminBookingsPage /> },

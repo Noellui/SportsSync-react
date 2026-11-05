@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Phone, Lock, Shield, Users } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Lock } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Logo } from '../../core/components/Logo';
 import { PrimaryButton } from '../../core/components/PrimaryButton';
@@ -29,7 +29,6 @@ export function RegisterPage() {
     defaultValues: { role: 'player' },
   });
 
-  const role = watch('role');
   const preferred = watch('preferred_sport');
 
   const onSubmit = async (data: RegisterInput) => {
@@ -64,38 +63,15 @@ export function RegisterPage() {
           className="mt-8"
         >
           <h1 className="font-display text-[30px] font-bold text-text">Create account</h1>
-          <p className="mt-1 text-[14px] text-muted">Join the SportsSync community.</p>
+          <p className="mt-1 text-[14px] text-muted">Join Manjalpur Sports as a player.</p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4" noValidate>
-            {/* Role selector */}
-            <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Account type">
-              {(['player', 'admin'] as const).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  role="radio"
-                  aria-checked={role === r}
-                  onClick={() => setValue('role', r)}
-                  className={clsx(
-                    'flex flex-col items-center gap-2 rounded-2xl border p-4 transition-all min-h-24',
-                    role === r
-                      ? 'border-primary bg-primary/10 text-text'
-                      : 'border-line bg-elevated/50 text-muted hover:border-line',
-                  )}
-                >
-                  {r === 'player' ? <Users size={22} className={role === r ? 'text-primary' : ''} aria-hidden /> : <Shield size={22} className={role === r ? 'text-primary' : ''} aria-hidden />}
-                  <span className="text-[14px] font-semibold capitalize">{r}</span>
-                </button>
-              ))}
-            </div>
-
             <TextField label="Full name" id="full_name" placeholder="Noel Louis" icon={User} error={errors.full_name?.message} {...reg('full_name')} />
             <TextField label="Email" id="email" type="email" placeholder="you@example.com" icon={Mail} error={errors.email?.message} {...reg('email')} />
             <TextField label="Phone" id="phone_number" type="tel" placeholder="+91 98765 43210" icon={Phone} error={errors.phone_number?.message} {...reg('phone_number')} />
             <TextField label="Password" id="password" type="password" placeholder="Min 4 characters" icon={Lock} showPasswordToggle error={errors.password?.message} {...reg('password')} />
             <TextField label="Confirm password" id="confirm_password" type="password" placeholder="Repeat password" icon={Lock} showPasswordToggle error={errors.confirm_password?.message} {...reg('confirm_password')} />
 
-            {role === 'player' && (
               <div className="space-y-3">
                 <p className="text-[12.5px] font-medium text-muted">Preferred sport</p>
                 <div className="flex flex-wrap gap-2">
@@ -113,9 +89,8 @@ export function RegisterPage() {
                     </button>
                   ))}
                 </div>
-                <TextField label="City" id="city" placeholder="Ahmedabad" {...reg('city')} />
+                <TextField label="City" id="city" placeholder="Vadodara" {...reg('city')} />
               </div>
-            )}
 
             <PrimaryButton type="submit" size="lg" full loading={registerMutation.isPending}>
               Create account

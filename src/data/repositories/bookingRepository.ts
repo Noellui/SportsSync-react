@@ -50,7 +50,7 @@ function enrich(b: Booking, viewerUserId?: string): BookingWithDetails {
   const slots = db.slots.filter((s) => b.slot_ids.includes(s.slot_id));
   const slot = slots[0];
   const payment = db.payments.find((p) => p.booking_id === b.booking_id && (!b.team_id || !viewerUserId || p.payer_user_id === viewerUserId));
-  const turf = db.turfs.find((t) => t.turf_id === slot?.turf_id);
+  const turf = db.turfs.find((t) => t.turf_id === slot?.turf_id) ?? db.turfs[0];
   const sport = db.sports.find((s) => s.sport_id === slot?.sport_id);
   const img = db.turfImages.find((i) => i.turf_id === turf?.turf_id && i.is_primary)
     ?? db.turfImages.find((i) => i.turf_id === turf?.turf_id);

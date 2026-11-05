@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, ToggleLeft } from 'lucide-react';
+import { Edit, ToggleLeft } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTurfs, useTurf } from '../../data/store/hooks';
 import { useSports } from '../../data/store/hooks';
@@ -21,19 +21,17 @@ const statusTone = { active: 'success', inactive: 'warning', maintenance: 'dange
 export function ManageTurfsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: turfs = [], isLoading, isError, refetch, error } = useTurfs();
+  const { data: turfs = [], isLoading, isError, refetch, error } = useTurfs({ includeInactive: true });
 
   const openEdit = (id: string) => { setEditingId(id); setFormOpen(true); };
-  const openDelete = (id: string) => setDeleteId(id);
-  const closeAll = () => { setFormOpen(false); setEditingId(null); setDeleteId(null); };
+  const closeAll = () => { setFormOpen(false); setEditingId(null); };
 
   const toggleStatus = async (t: any) => {
     const next: 'active' | 'inactive' | 'maintenance' = t.turf_status === 'active' ? 'inactive' : 'active';
     try {
       await turfRepository.updateTurf(t.turf_id, { turf_status: next });
-      toast.success('Turf marked ' + next);
+      toast.success('Venue marked ' + next);
       refetch();
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Failed to update'); }
   };
@@ -42,12 +40,9 @@ export function ManageTurfsPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-[24px] font-bold text-text">Manage turfs</h1>
-          <p className="text-[13.5px] text-muted">{turfs?.length ?? 0} venues in your portfolio</p>
+          <h1 className="font-display text-[24px] font-bold text-text">Manage venue</h1>
+          <p className="text-[13.5px] text-muted">Update your sports, photos, and availability</p>
         </div>
-        <PrimaryButton icon={Plus} onClick={() => { setEditingId(null); setFormOpen(true); }}>
-          Add turf
-        </PrimaryButton>
       </div>
 
       {isLoading ? (
@@ -55,7 +50,7 @@ export function ManageTurfsPage() {
       ) : isError ? (
         <ErrorState message={error?.message} onRetry={() => refetch()} />
       ) : !turfs?.length ? (
-        <EmptyState icon={Plus} title="No turfs yet" message="Create your first venue to get started." action={<PrimaryButton icon={Plus} onClick={() => { setEditingId(null); setFormOpen(true); }}>Add turf</PrimaryButton>} />
+        <EmptyState icon={Edit} title="Venue unavailable" message="The owner venue could not be loaded." />
       ) : (
         <div className="space-y-3">
           {turfs.map((t) => (
@@ -78,36 +73,16 @@ export function ManageTurfsPage() {
                   <ToggleLeft size={18} className={t.turf_status === 'active' ? 'text-success' : 'text-muted'} aria-hidden />
                 </button>
                 <PrimaryButton variant="ghost" icon={Edit} className="h-9 w-9" onClick={() => openEdit(t.turf_id)} aria-label="Edit">E</PrimaryButton>
-                <button
-                  onClick={() => openDelete(t.turf_id)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-danger/10 text-danger hover:bg-danger/20"
-                  aria-label="Delete"
-                >
-                  <Trash2 size={18} aria-hidden />
-                </button>
               </div>
             </GlassCard>
           ))}
         </div>
       )}
 
-      <BottomSheet open={formOpen} onClose={closeAll} title={editingId ? 'Edit turf' : 'Add turf'} height="95%">
+      <BottomSheet open={formOpen} onClose={closeAll} title="Edit venue" height="95%">
         <TurfFormPage turfId={editingId} onSaved={closeAll} />
       </BottomSheet>
 
-      <BottomSheet open={!!deleteId} onClose={() => setDeleteId(null)} title="Delete turf?">
-        <div className="space-y-4 pb-4 text-center">
-          <p className="text-[14px] text-muted">This will permanently remove the turf and its slots.</p>
-          <div className="flex gap-3">
-            <PrimaryButton variant="outline" className="flex-1" onClick={() => setDeleteId(null)}>Cancel</PrimaryButton>
-            <PrimaryButton variant="danger" className="flex-1" onClick={async () => {
-              if (!deleteId) return;
-              try { await turfRepository.deleteTurf(deleteId); toast.success('Turf deleted'); refetch(); setDeleteId(null); }
-              catch (e) { toast.error(e instanceof Error ? e.message : 'Delete failed'); }
-            }}>Delete</PrimaryButton>
-          </div>
-        </div>
-      </BottomSheet>
     </div>
   );
 }
@@ -119,7 +94,7 @@ function TurfFormPage({ turfId, onSaved }: { turfId: string | null; onSaved: () 
     turf_name: turf?.turf_name ?? '',
     description: turf?.description ?? '',
     address: turf?.address ?? '',
-    city: turf?.city ?? 'Ahmedabad',
+    city: turf?.city ?? 'Vadodara',
     opening_time: turf?.opening_time ?? '06:00',
     closing_time: turf?.closing_time ?? '23:00',
     sport_ids: turf?.sport_ids ?? [],
@@ -148,8 +123,8 @@ function TurfFormPage({ turfId, onSaved }: { turfId: string | null; onSaved: () 
   const save = async () => {
     setSaving(true);
     try {
-      if (turfId) await turfRepository.updateTurf(turfId, form);
-      else await turfRepository.createTurf('a_1', form);
+      if (!turfId) return;
+      await turfRepository.updateTurf(turfId, form);
       await queryClient.invalidateQueries({ queryKey: ['turfs'] });
       if (turfId) await queryClient.invalidateQueries({ queryKey: ['turf', turfId] });
       onSaved();
@@ -192,7 +167,7 @@ function TurfFormPage({ turfId, onSaved }: { turfId: string | null; onSaved: () 
         </div>
       </div>
       <TurfImagePicker images={form.image_urls} primaryImage={form.primary_image} onChange={(images, primaryImage) => setForm(f => ({ ...f, image_urls: images, primary_image: primaryImage }))} />
-      <PrimaryButton size="lg" full loading={saving} onClick={save}>{turfId ? 'Save changes' : 'Create turf'}</PrimaryButton>
+      <PrimaryButton size="lg" full loading={saving} onClick={save}>Save changes</PrimaryButton>
     </div>
   );
 }

@@ -29,7 +29,7 @@ export const DEMO_PLAYER_USER: User = {
 
 export const DEMO_ADMIN_USER: User = {
   user_id: 'u_admin',
-  full_name: 'Arena Admin',
+  full_name: 'Manjalpur Sports Owner',
   email: 'admin@sportssync.com',
   phone_number: '+91 90000 11111',
   password_hash: 'admin123',
@@ -65,13 +65,13 @@ export const seedAdmins: Admin[] = [
 ];
 
 export const seedPlayers: Player[] = [
-  { player_id: 'p_noel', user_id: 'u_noel', preferred_sport: 'Football', skill_level: 'intermediate', city: 'Ahmedabad', bio: 'Weekend striker. Always up for a 5-a-side.' },
+  { player_id: 'p_noel', user_id: 'u_noel', preferred_sport: 'Football', skill_level: 'intermediate', city: 'Vadodara', bio: 'Weekend striker. Always up for a 5-a-side.' },
   ...extraPlayerData.map((p, i) => ({
     player_id: `p_${i + 1}`,
     user_id: `u_p${i + 1}`,
     preferred_sport: p.sport,
     skill_level: p.skill,
-    city: 'Ahmedabad',
+    city: 'Vadodara',
     bio: p.bio,
   })),
 ];
@@ -86,23 +86,18 @@ export const seedSports: Sport[] = [
 ];
 
 const turfDefs = [
-  { id: 't_1', name: 'Green Arena', area: 'Satellite', city: 'Ahmedabad', status: 'active' as const, rating: 4.8, sports: ['s_football'], images: ['turf_1.jpg', 'sport_football.jpg', 'turf_4.jpg'] },
-  { id: 't_2', name: "Striker's Den", area: 'Bopal', city: 'Ahmedabad', status: 'active' as const, rating: 4.6, sports: ['s_football', 's_cricket'], images: ['turf_2.jpg', 'sport_cricket.jpg', 'sport_football.jpg'] },
-  { id: 't_3', name: 'Dunk Dome', area: 'SG Highway', city: 'Ahmedabad', status: 'active' as const, rating: 4.4, sports: ['s_basketball', 's_pickleball'], images: ['turf_3.jpg', 'sport_basketball.jpg', 'sport_pickleball.jpg'] },
-  { id: 't_4', name: 'Smash Court', area: 'Prahlad Nagar', city: 'Ahmedabad', status: 'active' as const, rating: 4.5, sports: ['s_badminton', 's_tennis'], images: ['turf_4.jpg', 'sport_badminton.jpg', 'sport_tennis.jpg'] },
-  { id: 't_5', name: 'Pitch Perfect', area: 'Maninagar', city: 'Ahmedabad', status: 'maintenance' as const, rating: 4.2, sports: ['s_cricket', 's_football'], images: ['turf_5.jpg', 'sport_cricket.jpg'] },
-  { id: 't_6', name: 'Night Owl Turf', area: 'Vastrapur', city: 'Ahmedabad', status: 'active' as const, rating: 4.9, sports: ['s_football', 's_badminton', 's_tennis'], images: ['turf_6.jpg', 'sport_football.jpg', 'sport_badminton.jpg', 'sport_tennis.jpg'] },
+  { id: 't_1', name: 'Manjalpur Sports', area: 'Manjalpur', city: 'Vadodara', status: 'active' as const, rating: 4.8, sports: ['s_football', 's_cricket', 's_basketball', 's_badminton', 's_tennis', 's_pickleball'], images: ['turf_1.jpg', 'turf_2.jpg', 'turf_3.jpg', 'turf_4.jpg'] },
 ];
 
 export const seedTurfs: Turf[] = turfDefs.map((t) => ({
   turf_id: t.id,
   admin_id: 'a_1',
   turf_name: t.name,
-  description: `${t.name} is a premium ${t.sports.length > 1 ? 'multi-sport' : 'purpose-built'} venue in ${t.area}, Ahmedabad. Floodlit, well-maintained and open late for night games.`,
+  description: `${t.name} is a multi-sport venue in ${t.area}, Vadodara. Book a court or turf, bring your team, and play under the lights.`,
   opening_time: '06:00',
   closing_time: '23:00',
   turf_status: t.status,
-  address: `${t.area}, Ahmedabad, Gujarat`,
+  address: `Court Lane, ${t.area}, Vadodara, Gujarat 390011 (demo address)`,
   city: t.city,
   rating: t.rating,
 }));
@@ -121,12 +116,11 @@ export const seedTurfSports: TurfSport[] = turfDefs.flatMap((t) =>
   t.sports.map((s) => ({ turf_id: t.id, sport_id: s })),
 );
 
-// ---- Slots: next 7 days, 6:00 to 23:00, 1-hour slots per turf+sport ----
+// ---- Slots: next 14 days, 6:00 to 23:00, 1-hour slots per turf+sport ----
 export function seedSlots(): TurfSlot[] {
   const slots: TurfSlot[] = [];
   const today = new Date();
   for (const t of turfDefs) {
-    if (t.status === 'maintenance') continue;
     for (const sportId of t.sports) {
       for (let d = 0; d < 14; d++) {
         const date = iso(addDays(today, d));
@@ -181,8 +175,8 @@ export const seedBookings: Booking[] = [
   {
     booking_id: 'b_up2',
     player_id: 'p_noel',
-    slot_id: 'slot_t_6_football_' + iso(upcoming2Date) + '_20',
-    slot_ids: ['slot_t_6_football_' + iso(upcoming2Date) + '_20'],
+    slot_id: 'slot_t_1_football_' + iso(upcoming2Date) + '_20',
+    slot_ids: ['slot_t_1_football_' + iso(upcoming2Date) + '_20'],
     booking_date: iso(subDays(now, 2)),
     booking_amount: 1500,
     booking_status: 'confirmed',
@@ -193,8 +187,8 @@ export const seedBookings: Booking[] = [
   {
     booking_id: 'b_done1',
     player_id: 'p_noel',
-    slot_id: 'slot_t_2_cricket_' + iso(subDays(now, 6)) + '_17',
-    slot_ids: ['slot_t_2_cricket_' + iso(subDays(now, 6)) + '_17'],
+    slot_id: 'slot_t_1_cricket_' + iso(subDays(now, 6)) + '_17',
+    slot_ids: ['slot_t_1_cricket_' + iso(subDays(now, 6)) + '_17'],
     booking_date: iso(subDays(now, 7)),
     booking_amount: 1200,
     booking_status: 'completed',
@@ -205,8 +199,8 @@ export const seedBookings: Booking[] = [
   {
     booking_id: 'b_done2',
     player_id: 'p_noel',
-    slot_id: 'slot_t_4_badminton_' + iso(subDays(now, 12)) + '_19',
-    slot_ids: ['slot_t_4_badminton_' + iso(subDays(now, 12)) + '_19'],
+    slot_id: 'slot_t_1_badminton_' + iso(subDays(now, 12)) + '_19',
+    slot_ids: ['slot_t_1_badminton_' + iso(subDays(now, 12)) + '_19'],
     booking_date: iso(subDays(now, 13)),
     booking_amount: 900,
     booking_status: 'completed',
@@ -217,8 +211,8 @@ export const seedBookings: Booking[] = [
   {
     booking_id: 'b_done3',
     player_id: 'p_noel',
-    slot_id: 'slot_t_6_football_' + iso(subDays(now, 20)) + '_18',
-    slot_ids: ['slot_t_6_football_' + iso(subDays(now, 20)) + '_18'],
+    slot_id: 'slot_t_1_football_' + iso(subDays(now, 20)) + '_18',
+    slot_ids: ['slot_t_1_football_' + iso(subDays(now, 20)) + '_18'],
     booking_date: iso(subDays(now, 21)),
     booking_amount: 2600,
     booking_status: 'completed',
@@ -271,9 +265,9 @@ export const seedPayments: Payment[] = [
 // ---- Teams ----
 export const seedTeams: Team[] = [
   { team_id: 'team_1', created_by: 'p_noel', sport_id: 's_football', team_name: 'Friday Night Strikers', description: '5-a-side squad for Friday nights. Intermediate to pro.', required_players: 10, team_status: 'open', created_date: iso(subDays(now, 40)) },
-  { team_id: 'team_2', created_by: 'p_1', sport_id: 's_cricket', team_name: 'Ahmedabad Overs', description: 'Casual cricket crew, all levels welcome.', required_players: 8, team_status: 'open', created_date: iso(subDays(now, 30)) },
+  { team_id: 'team_2', created_by: 'p_1', sport_id: 's_cricket', team_name: 'Manjalpur Overs', description: 'Casual cricket crew, all levels welcome.', required_players: 8, team_status: 'open', created_date: iso(subDays(now, 30)) },
   { team_id: 'team_3', created_by: 'p_2', sport_id: 's_badminton', team_name: 'Smash Sisters', description: 'Badminton doubles group, weekend games.', required_players: 6, team_status: 'full', created_date: iso(subDays(now, 60)) },
-  { team_id: 'team_4', created_by: 'p_4', sport_id: 's_basketball', team_name: 'Dunk Squad', description: 'Half-court pickup, SG Highway. Bring your A game.', required_players: 10, team_status: 'closed', created_date: iso(subDays(now, 90)) },
+  { team_id: 'team_4', created_by: 'p_4', sport_id: 's_basketball', team_name: 'Dunk Squad', description: 'Half-court pickup in Manjalpur. Bring your A game.', required_players: 10, team_status: 'closed', created_date: iso(subDays(now, 90)) },
 ];
 
 export const seedTeamMembers: TeamMember[] = [

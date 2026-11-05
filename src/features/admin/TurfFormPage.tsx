@@ -14,14 +14,13 @@ import { queryClient } from '../../data/store/queryClient';
 export function TurfFormPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const isEdit = !!id;
   const { data: turf } = useTurf(id ?? '');
   const { data: allSports = [] } = useSports();
   const [form, setForm] = useState({
     turf_name: turf?.turf_name ?? '',
     description: turf?.description ?? '',
     address: turf?.address ?? '',
-    city: turf?.city ?? 'Ahmedabad',
+    city: turf?.city ?? 'Vadodara',
     opening_time: turf?.opening_time ?? '06:00',
     closing_time: turf?.closing_time ?? '23:00',
     sport_ids: turf?.sport_ids ?? [],
@@ -50,20 +49,20 @@ export function TurfFormPage() {
   const save = async () => {
     setSaving(true);
     try {
-      if (isEdit && id) await turfRepository.updateTurf(id, form);
-      else await turfRepository.createTurf('a_1', form);
+      if (!id) return;
+      await turfRepository.updateTurf(id, form);
       await queryClient.invalidateQueries({ queryKey: ['turfs'] });
       if (id) await queryClient.invalidateQueries({ queryKey: ['turf', id] });
-      toast.success(isEdit ? 'Turf updated' : 'Turf created');
+      toast.success('Venue updated');
       navigate('/admin/turfs', { replace: true });
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Save failed'); }
     finally { setSaving(false); }
   };
 
-  if (isEdit && turf === undefined) {
+  if (turf === undefined) {
     return <div className="space-y-4"><Skeleton className="h-12 w-full" /><Skeleton className="h-24 w-full" /></div>;
   }
-  if (isEdit && !turf) {
+  if (!turf) {
     return <ErrorState message="Turf not found" onRetry={() => navigate('/admin/turfs')} />;
   }
 
@@ -73,7 +72,7 @@ export function TurfFormPage() {
         <button onClick={() => navigate('/admin/turfs')} className="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/70" aria-label="Back">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         </button>
-        <h1 className="font-display text-[24px] font-bold text-text">{isEdit ? 'Edit turf' : 'Add turf'}</h1>
+        <h1 className="font-display text-[24px] font-bold text-text">Edit venue</h1>
       </div>
 
       <form onSubmit={e => { e.preventDefault(); save(); }} className="space-y-4" noValidate>
@@ -111,7 +110,7 @@ export function TurfFormPage() {
             </div>
           </div>
           <TurfImagePicker images={form.image_urls} primaryImage={form.primary_image} onChange={(images, primaryImage) => setForm(f => ({ ...f, image_urls: images, primary_image: primaryImage }))} />
-          {isEdit && (
+          {
             <div>
               <p className="mb-2 text-[12.5px] font-medium text-muted">Status</p>
               <select value={form.turf_status} onChange={e => setForm({...form, turf_status: e.target.value as any})} className="h-12 w-full rounded-2xl border border-line bg-elevated px-4 text-[15px] text-text">
@@ -120,9 +119,9 @@ export function TurfFormPage() {
                 <option value="maintenance">Maintenance</option>
               </select>
             </div>
-          )}
+          }
         </GlassCard>
-        <PrimaryButton type="submit" size="lg" full loading={saving}>{isEdit ? 'Save changes' : 'Create turf'}</PrimaryButton>
+        <PrimaryButton type="submit" size="lg" full loading={saving}>Save changes</PrimaryButton>
       </form>
     </div>
   );

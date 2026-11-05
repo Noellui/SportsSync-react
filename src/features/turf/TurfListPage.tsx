@@ -30,7 +30,7 @@ export function TurfListPage() {
   return (
     <div className="space-y-6 pb-6">
       <header>
-        <SectionHeader title={activeSport ? `${activeSport.sport_name} turfs` : 'Browse turfs'} subtitle={turfs ? `${turfs.length} venues in Ahmedabad` : undefined} />
+        <SectionHeader title={activeSport ? `${activeSport.sport_name} at Manjalpur Sports` : 'Choose your sport'} subtitle={turfs ? `Manjalpur Sports · Vadodara` : undefined} />
         <div className="relative">
           <Search size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" aria-hidden />
           <input
@@ -38,7 +38,7 @@ export function TurfListPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name or area"
-            aria-label="Search turfs"
+            aria-label="Search sports and venue"
             className="h-12 w-full rounded-2xl border border-line bg-elevated pl-11 pr-4 text-[14px] text-text placeholder:text-muted/60 focus:outline-none focus:ring-[1.5px] focus:ring-primary"
           />
         </div>
@@ -77,9 +77,9 @@ export function TurfListPage() {
       ) : !turfs || turfs.length === 0 ? (
         <EmptyState
           icon={Search}
-          title="No turfs found"
+          title="No availability found"
           message="Try another sport or search term."
-          action={<Link to="/home/turfs"><PrimaryButton variant="outline">View all turfs</PrimaryButton></Link>}
+          action={<Link to="/home/turfs"><PrimaryButton variant="outline">View all sports</PrimaryButton></Link>}
         />
       ) : (
         <div className="space-y-3">

@@ -13,7 +13,7 @@ import { EmptyState } from '../../core/components/EmptyState';
 import { BottomSheet } from '../../core/components/BottomSheet';
 
 export function ManageSlotsPage() {
-  const { data: turfs = [] } = useTurfs();
+  const { data: turfs = [] } = useTurfs({ includeInactive: true });
   const queryClient = useQueryClient();
   const [turfId, setTurfId] = useState<string | null>(turfs[0]?.turf_id ?? null);
   const selectedTurfId = turfId ?? turfs[0]?.turf_id ?? '';

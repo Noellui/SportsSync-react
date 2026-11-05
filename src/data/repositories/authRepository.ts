@@ -50,6 +50,7 @@ export const authRepository: AuthRepository = {
   async register(input) {
     return withTimeout((async () => {
       await delay(simulateLatency());
+      if (input.role === 'admin') throw new Error('The venue owner account is already set up');
       if (db.users.some((u) => u.email.toLowerCase() === input.email.trim().toLowerCase())) {
         throw new Error('An account with this email already exists');
       }
@@ -59,28 +60,19 @@ export const authRepository: AuthRepository = {
         email: input.email.trim(),
         phone_number: input.phone_number,
         password_hash: input.password,
-        role: input.role,
+        role: 'player',
         registration_date: new Date().toISOString().slice(0, 10),
         account_status: 'active',
       };
       db.users.push(user);
-      if (user.role === 'player') {
-        db.players.push({
-          player_id: randId('p'),
-          user_id: user.user_id,
-          preferred_sport: input.preferred_sport ?? 'Football',
-          skill_level: 'beginner',
-          city: input.city ?? 'Ahmedabad',
-          bio: '',
-        });
-      } else {
-        db.admins.push({
-          admin_id: randId('a'),
-          user_id: user.user_id,
-          contact_no: input.phone_number,
-          register_date: new Date().toISOString().slice(0, 10),
-        });
-      }
+      db.players.push({
+        player_id: randId('p'),
+        user_id: user.user_id,
+        preferred_sport: input.preferred_sport ?? 'Football',
+        skill_level: 'beginner',
+        city: input.city ?? 'Vadodara',
+        bio: '',
+      });
       persistDB();
       return { user, token: randId('tok') };
     })(), 8000, 'register');
