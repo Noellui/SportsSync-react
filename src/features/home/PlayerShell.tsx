@@ -100,5 +100,5 @@ export function PlayerShell() {
 }
 
 export function shouldShowPlayerNav(pathname: string): boolean {
-  return !pathname.startsWith('/home/turf/') && !pathname.startsWith('/home/checkout/');
+  return pathname.startsWith('/home');
 }

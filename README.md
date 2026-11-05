@@ -9,7 +9,11 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The app starts at `/login`.
+Open the local URL printed by Vite. The public welcome page is at `/`; sign in is at `/login`.
+
+## Android APK download
+
+The public page has a Download section. No Android APK is included in this repository yet, so it shows **APK coming soon**. To activate its download button after building an APK, place the file in `public/downloads/` and set `VITE_APK_URL=/downloads/your-file.apk` in a `.env.local` file. Restart Vite or rebuild the site after setting the variable.
 
 Demo accounts:
 
@@ -52,7 +56,7 @@ The six sports are Football, Cricket, Basketball, Badminton, Tennis, and Pickleb
 | Pitch Perfect | Maninagar | Cricket, Football | Maintenance |
 | Night Owl Turf | Vastrapur | Football, Badminton, Tennis | Active |
 
-For active venues, the seed generates one-hour slots from 06:00 to 23:00 for the next seven days for each supported sport. Prices start at ₹800, add ₹400 from 18:00 to 21:00, and add ₹300 on weekends. Cricket slots cost ₹200 less, with a ₹600 minimum; all slots have a ₹1,800 maximum. About 30% of generated slots are marked booked. The maintenance venue has no generated slots.
+For active venues, the seed generates one-hour slots from 06:00 to 23:00 for the next 14 days for each supported sport. Prices start at ₹800, add ₹400 from 18:00 to 21:00, and add ₹300 on weekends. Cricket slots cost ₹200 less, with a ₹600 minimum; all slots have a ₹1,800 maximum. About 30% of generated slots are marked booked. The maintenance venue has no generated slots.
 
 ### Bookings and payments
 

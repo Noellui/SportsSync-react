@@ -91,7 +91,7 @@ export function CheckoutPage() {
   const endHour = firstSlot ? parseInt(firstSlot.end_time.slice(0, 2), 10) + (slotIds.length - 1) : 1;
 
   return (
-    <div className="space-y-5 pb-32">
+    <div className="space-y-5 pb-52 md:pb-32">
       {slotsError && <div role="alert" className="rounded-2xl border border-danger/30 p-4 text-danger">Could not load the selected slots. <button onClick={() => retrySlots()} className="underline">Retry</button></div>}
       <div className="flex items-center gap-3">
         <button
@@ -293,7 +293,7 @@ export function CheckoutPage() {
       </div>
 
       {/* Sticky pay bar */}
-      <div className="fixed bottom-4 left-4 right-4 z-30 flex items-center justify-between gap-3 rounded-[24px] border border-white/10 bg-surface/90 p-3 backdrop-blur-[14px] md:left-auto md:right-8 md:w-[420px]">
+      <div className="fixed bottom-28 left-4 right-4 z-30 flex items-center justify-between gap-3 rounded-[24px] border border-white/10 bg-surface/90 p-3 backdrop-blur-[14px] md:bottom-4 md:left-auto md:right-8 md:w-[420px]">
         <div>
           <p className="text-[11px] text-muted">You pay</p>
           <p className="font-display text-[19px] font-bold text-primary">{inr(myShare)}</p>
