@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { AuthHydrator, RequireAuth, GuestOnly, AuthGate } from './guards';
 import { LoginPage } from '../../features/auth/LoginPage';
 import { RegisterPage } from '../../features/auth/RegisterPage';
@@ -22,6 +22,7 @@ import { ManageSlotsPage } from '../../features/admin/ManageSlotsPage';
 import { AdminBookingsPage } from '../../features/admin/AdminBookingsPage';
 import { AdminProfilePage } from '../../features/admin/AdminProfilePage';
 import { NotFoundPage } from '../../features/NotFoundPage';
+import { LandingPage } from '../../features/LandingPage';
 
 export const appRouter = createBrowserRouter([
   {
@@ -71,7 +72,7 @@ export const appRouter = createBrowserRouter([
     ],
   },
 
-  { path: '/', element: <Navigate to="/login" replace /> },
+  { path: '/', element: <LandingPage /> },
   { path: '*', element: <NotFoundPage /> },
     ],
   },

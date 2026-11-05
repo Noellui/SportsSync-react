@@ -55,7 +55,7 @@ export function LoginPage() {
       <div className="relative z-10 mx-auto flex w-full max-w-[440px] flex-1 flex-col px-5 pb-[max(24px,env(safe-area-inset-bottom))] pt-6">
         {/* Top bar */}
         <div className="flex items-center justify-between">
-          <Logo size={44} />
+          <Link to="/" aria-label="SportsSync welcome page"><Logo size={44} /></Link>
           <button
             onClick={() => toast('Support chat opens here (demo)')}
             className="rounded-full border border-white/15 bg-surface/60 px-4 py-2 text-[12.5px] font-semibold text-text backdrop-blur-md min-h-9"
