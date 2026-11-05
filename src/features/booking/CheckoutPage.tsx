@@ -158,19 +158,20 @@ export function CheckoutPage() {
           </div>
         </div>
 
-        {captainTeams.length > 0 && (
+        <label className="block text-[12.5px] font-semibold text-muted" htmlFor="booking-team">Book with a team
           <select
+            id="booking-team"
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}
-            aria-label="Pick from my team"
-            className="h-11 w-full rounded-2xl border border-line bg-elevated px-3.5 text-[13.5px] text-text focus:outline-none focus:ring-[1.5px] focus:ring-primary"
+            className="mt-2 h-11 w-full rounded-2xl border border-line bg-elevated px-3.5 text-[13.5px] text-text focus:outline-none focus:ring-[1.5px] focus:ring-primary"
           >
-            <option value="">Pick from my team (optional)</option>
+            <option value="">No team — individual booking</option>
             {captainTeams.map((t) => (
               <option key={t.team_id} value={t.team_id}>{t.team_name} ({t.member_count} players)</option>
             ))}
           </select>
-        )}
+          {!teamsLoading && captainTeams.length === 0 && <span className="mt-1 block font-normal text-muted">No teams you captain play {sportName}.</span>}
+        </label>
         {teamId && !teamsLoading && !selectedTeam && <p role="alert" className="text-[12px] text-danger">This team cannot book the selected sport. Go back and choose a matching turf.</p>}
 
         {playerCount > 1 && (

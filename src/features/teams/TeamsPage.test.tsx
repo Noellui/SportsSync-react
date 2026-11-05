@@ -22,3 +22,10 @@ it('shows the captain details and their uploaded profile photo while browsing te
     captain.profile_image = previousImage;
   }
 });
+
+it('shows a management path instead of a join action on the captain’s own team', async () => {
+  const team = (await teamRepository.getTeams())[0];
+  render(<TeamCard team={team} viewerUserId={team.captain_user_id} onJoin={() => {}} onView={() => {}} />);
+  expect(screen.getByRole('button', { name: 'Manage team' })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Request to join' })).toBeNull();
+});

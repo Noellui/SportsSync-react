@@ -22,6 +22,15 @@ const sportImageMap: Record<string, string> = {
   s_pickleball: '/images/sport_pickleball.jpg',
 };
 
+function requireCaptain(teamId: string, userId: string): Team {
+  const team = db.teams.find((item) => item.team_id === teamId);
+  if (!team) throw new Error('Team not found');
+  if (!db.teamMembers.some((member) => member.team_id === teamId && member.user_id === userId && member.member_role === 'captain' && member.membership_status === 'active')) {
+    throw new Error('Only the captain can manage this team');
+  }
+  return team;
+}
+
 function enrich(t: Team): TeamWithExtras {
   const sport = db.sports.find((s) => s.sport_id === t.sport_id);
   const members = db.teamMembers.filter((member, index, all) =>
@@ -112,15 +121,17 @@ export const teamRepository = {
     })(), 8000, 'sendJoinRequest');
   },
 
-  async respondToRequest(requestId: string, accept: boolean): Promise<TeamJoinRequest> {
+  async respondToRequest(requestId: string, accept: boolean, actorUserId: string): Promise<TeamJoinRequest> {
     return withTimeout((async () => {
       await delay(simulateLatency());
       const req = db.joinRequests.find((r) => r.request_id === requestId);
       if (!req) throw new Error('Request not found');
+      const team = requireCaptain(req.team_id, actorUserId);
+      if (req.request_status !== 'pending') throw new Error('Request already handled');
+      if (accept && (team.team_status !== 'open' || enrich(team).member_count >= team.required_players)) throw new Error('Team is full or closed');
       req.request_status = accept ? 'accepted' : 'rejected';
       req.responded_at = new Date().toISOString().slice(0, 10);
       if (accept) {
-        const team = db.teams.find((t) => t.team_id === req.team_id);
         const player = db.players.find((p) => p.player_id === req.player_id);
         const user = db.users.find((u) => u.user_id === player?.user_id);
         if (team && player && user) {
@@ -139,6 +150,36 @@ export const teamRepository = {
       persistDB();
       return req;
     })(), 8000, 'respondToRequest');
+  },
+
+  async removeMember(teamId: string, memberUserId: string, actorUserId: string): Promise<TeamWithExtras> {
+    return withTimeout((async () => {
+      await delay(simulateLatency());
+      const team = requireCaptain(teamId, actorUserId);
+      const member = db.teamMembers.find((item) => item.team_id === teamId && item.user_id === memberUserId && item.membership_status === 'active');
+      if (!member || member.member_role === 'captain') throw new Error('This member cannot be removed');
+      member.membership_status = 'left';
+      if (team.team_status === 'full') team.team_status = 'open';
+      persistDB();
+      return enrich(team);
+    })(), 8000, 'removeMember');
+  },
+
+  async updateTeam(teamId: string, actorUserId: string, patch: Partial<Pick<Team, 'team_name' | 'description' | 'required_players'>>): Promise<TeamWithExtras> {
+    return withTimeout((async () => {
+      await delay(simulateLatency());
+      const team = requireCaptain(teamId, actorUserId);
+      const name = patch.team_name?.trim() ?? team.team_name;
+      const requiredPlayers = patch.required_players ?? team.required_players;
+      if (!name) throw new Error('Team name is required');
+      if (!Number.isInteger(requiredPlayers) || requiredPlayers < enrich(team).member_count || requiredPlayers > 22) throw new Error('Invalid team size');
+      team.team_name = name;
+      team.description = patch.description?.trim() ?? team.description;
+      team.required_players = requiredPlayers;
+      team.team_status = enrich(team).member_count >= requiredPlayers ? 'full' : 'open';
+      persistDB();
+      return enrich(team);
+    })(), 8000, 'updateTeam');
   },
 
   async getMembers(teamId: string): Promise<TeamMember[]> {

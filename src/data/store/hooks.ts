@@ -156,12 +156,30 @@ export function useSendJoinRequest() {
 export function useRespondToRequest() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ requestId, accept }: { requestId: string; accept: boolean }) =>
-      teamRepository.respondToRequest(requestId, accept),
+    mutationFn: ({ requestId, accept, actorUserId }: { requestId: string; accept: boolean; actorUserId: string }) =>
+      teamRepository.respondToRequest(requestId, accept, actorUserId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams'] });
       qc.invalidateQueries({ queryKey: ['team'] });
     },
+  });
+}
+
+export function useRemoveTeamMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ teamId, memberUserId, actorUserId }: { teamId: string; memberUserId: string; actorUserId: string }) =>
+      teamRepository.removeMember(teamId, memberUserId, actorUserId),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['teams'] }); qc.invalidateQueries({ queryKey: ['team'] }); },
+  });
+}
+
+export function useUpdateTeam() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ teamId, actorUserId, patch }: { teamId: string; actorUserId: string; patch: Parameters<typeof teamRepository.updateTeam>[2] }) =>
+      teamRepository.updateTeam(teamId, actorUserId, patch),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['teams'] }); qc.invalidateQueries({ queryKey: ['team'] }); },
   });
 }
 
