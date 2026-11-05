@@ -122,13 +122,14 @@ export const seedTurfSports: TurfSport[] = turfDefs.flatMap((t) =>
 );
 
 // ---- Slots: next 7 days, 6:00 to 23:00, 1-hour slots per turf+sport ----
-function seedSlots(): TurfSlot[] {
+export function seedSlots(): TurfSlot[] {
   const slots: TurfSlot[] = [];
+  const today = new Date();
   for (const t of turfDefs) {
     if (t.status === 'maintenance') continue;
     for (const sportId of t.sports) {
-      for (let d = 0; d < 7; d++) {
-        const date = iso(addDays(now, d));
+      for (let d = 0; d < 14; d++) {
+        const date = iso(addDays(today, d));
         const weekend = [0, 6].includes(new Date(date).getDay());
         for (let h = 6; h < 23; h++) {
           const start = `${String(h).padStart(2, '0')}:00`;

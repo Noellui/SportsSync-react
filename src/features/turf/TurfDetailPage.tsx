@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft, Heart, MapPin, Star,
@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTurf, useTurfSlots, useSports } from '../../data/store/hooks';
-import { next7Days } from '../../data/repositories/turfRepository';
+import { nextBookingDays } from '../../data/repositories/turfRepository';
 import { inr, formatTime, formatDateShort, isOpenNow, hasSlotStarted } from '../../core/utils/format';
 import { StatusChip } from '../../core/components/StatusChip';
 import { Skeleton } from '../../core/components/Skeleton';
@@ -29,7 +29,7 @@ function SlotPicker({ turfId, sports, onDone }: {
   sports: { sport_id: string; sport_name: string }[];
   onDone: (slotIds: string[]) => void;
 }) {
-  const days = useMemo(() => next7Days(), []);
+  const days = nextBookingDays();
   const [date, setDate] = useState(days[0]);
   const [sportId, setSportId] = useState(sports[0]?.sport_id ?? '');
   const [selected, setSelected] = useState<string[]>([]);
@@ -61,26 +61,6 @@ function SlotPicker({ turfId, sports, onDone }: {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      {/* Date strip */}
-      <div className="no-scrollbar flex gap-2 overflow-x-auto px-1">
-        {days.map((d) => {
-          const sel = d === date;
-          return (
-            <button
-              key={d}
-              onClick={() => { setDate(d); setSelected([]); }}
-              className={clsx(
-                'flex h-20 w-16 shrink-0 flex-col items-center justify-center rounded-2xl border text-[12px] font-semibold transition-colors',
-                sel ? 'border-primary bg-primary text-on-primary' : 'border-line bg-elevated/50 text-muted',
-              )}
-            >
-              <span className="text-[10px] uppercase opacity-80">{formatDateShort(d).slice(0, 3)}</span>
-              <span className="text-[18px] font-bold">{d.slice(8)}</span>
-            </button>
-          );
-        })}
-      </div>
-
       {/* Sport chips */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar">
         {sports.map((s) => (
@@ -97,11 +77,19 @@ function SlotPicker({ turfId, sports, onDone }: {
         ))}
       </div>
 
+      <label className="block text-[13px] font-semibold text-text" htmlFor="booking-date">1. Select a date
+        <input id="booking-date" type="date" min={days[0]} max={days[days.length - 1]} value={date} onChange={(event) => { setDate(event.target.value); setSelected([]); }} className="mt-2 h-12 w-full rounded-2xl border border-line bg-elevated px-4 text-[14px] text-text" />
+        <span className="mt-1 block text-[11px] font-normal text-muted">{formatDateShort(date)} · Book up to two weeks ahead</span>
+      </label>
+
       {/* Slot grid */}
+      <h3 className="text-[13px] font-semibold text-text">2. Select a time</h3>
       {isLoading ? (
         <div className="grid grid-cols-3 gap-2.5">
           {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-16" />)}
         </div>
+      ) : slots.length === 0 ? (
+        <p className="rounded-2xl border border-line bg-elevated/40 p-4 text-[13px] text-muted">No times available for this date. Try another date.</p>
       ) : (
         <div className="grid grid-cols-3 gap-2.5">
           {slots.map((s) => {
