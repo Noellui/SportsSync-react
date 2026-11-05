@@ -8,6 +8,7 @@ import { useAuthStore } from '../../data/store/authStore';
 import { db } from '../../data/repositories/db';
 import { formatDateShort, inr } from '../../core/utils/format';
 import { teamShareAmount } from '../../data/repositories/bookingRepository';
+import { avatarForUser } from '../../core/utils/avatar';
 import { Skeleton } from '../../core/components/Skeleton';
 import { ErrorState } from '../../core/components/ErrorState';
 import { PrimaryButton } from '../../core/components/PrimaryButton';
@@ -102,7 +103,7 @@ export function TeamDetailPage() {
         </div>}
 
         <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface/60 p-3.5">
-          <img src={avatarFor(team.captain_user_id)} alt="" className="h-11 w-11 rounded-full object-cover" />
+          <img src={avatarForUser(team.captain_user_id, db.users.find((u) => u.user_id === team.captain_user_id)?.profile_image)} alt="" className="h-11 w-11 rounded-full object-cover" />
           <div className="min-w-0 flex-1">
             <p className="text-[14px] font-semibold text-text">{captainName}</p>
             <p className="text-[11.5px] text-muted">Captain · joined {formatDateShort(team.created_date)}</p>

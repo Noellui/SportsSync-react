@@ -13,16 +13,15 @@ import { StatusChip } from '../../core/components/StatusChip';
 import { BottomSheet } from '../../core/components/BottomSheet';
 import { toast } from 'sonner';
 import type { TeamWithExtras } from '../../data/repositories/teamRepository';
+import { db } from '../../data/repositories/db';
+import { avatarForUser } from '../../core/utils/avatar';
 
 const teamStatusTone = { open: 'success', full: 'warning', closed: 'neutral' } as const;
 
-function TeamCard({ team, onJoin }: { team: TeamWithExtras; onJoin: () => void }) {
+export function TeamCard({ team, onJoin }: { team: TeamWithExtras; onJoin: () => void }) {
   const shown = team.members.slice(0, 4);
-  const avatars: Record<string, string> = {
-    u_noel: '/images/avatar_1.jpg', u_p1: '/images/avatar_2.jpg',
-    u_p2: '/images/avatar_3.jpg', u_p3: '/images/avatar_4.jpg',
-    u_p4: '/images/avatar_1.jpg', u_p5: '/images/avatar_2.jpg', u_p6: '/images/avatar_3.jpg',
-  };
+  const captain = db.users.find((user) => user.user_id === team.captain_user_id);
+  const captainPlayer = db.players.find((player) => player.user_id === team.captain_user_id);
   const pct = Math.min(100, Math.round((team.member_count / team.required_players) * 100));
 
   return (
@@ -38,12 +37,20 @@ function TeamCard({ team, onJoin }: { team: TeamWithExtras; onJoin: () => void }
         <StatusChip tone={teamStatusTone[team.team_status]}>{team.team_status}</StatusChip>
       </div>
 
+      <div className="mt-3 flex items-center gap-2.5 rounded-xl bg-elevated/55 p-2.5">
+        <img src={avatarForUser(team.captain_user_id, captain?.profile_image)} alt={`${captain?.full_name ?? 'Player'}, team captain`} className="h-9 w-9 rounded-full object-cover" />
+        <div className="min-w-0">
+          <p className="truncate text-[12.5px] font-semibold text-text">{captain?.full_name ?? 'Player'}</p>
+          <p className="text-[11px] text-muted">Captain · {captainPlayer?.skill_level ?? 'Player'}</p>
+        </div>
+      </div>
+
       <div className="mt-3 flex items-center gap-2">
         <div className="flex -space-x-2.5">
           {shown.map((m) => (
             <img
               key={m.team_member_id}
-              src={avatars[m.user_id] ?? '/images/avatar_4.jpg'}
+              src={avatarForUser(m.user_id, db.users.find((user) => user.user_id === m.user_id)?.profile_image)}
               alt=""
               className="h-8 w-8 rounded-full border-2 border-surface object-cover"
             />
