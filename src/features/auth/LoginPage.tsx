@@ -11,8 +11,6 @@ import { TextField } from '../../core/components/TextField';
 import { loginSchema, type LoginInput } from '../../core/utils/validators';
 import { useLogin } from '../../data/store/hooks';
 
-const DEMO = { email: 'noellouis2005@gmail.com', password: '12345' };
-
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,7 +23,6 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<LoginInput>({ resolver: zodResolver(loginSchema), defaultValues: { email: (location.state as { email?: string } | null)?.email ?? '' } });
 
@@ -41,11 +38,6 @@ export function LoginPage() {
       setAuthError(e instanceof Error ? e.message : 'Login failed');
       setShake((s) => s + 1);
     }
-  };
-
-  const fillDemo = () => {
-    setValue('email', DEMO.email, { shouldValidate: true });
-    setValue('password', DEMO.password, { shouldValidate: true });
   };
 
   return (
@@ -190,44 +182,12 @@ export function LoginPage() {
                   </PrimaryButton>
                 </form>
 
-                <div className="my-5 flex items-center gap-3 text-[11.5px] uppercase tracking-wider text-muted">
-                  <span className="h-px flex-1 bg-line" aria-hidden />
-                  or continue with
-                  <span className="h-px flex-1 bg-line" aria-hidden />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => toast('Coming soon')}
-                    className="flex h-[52px] items-center justify-center gap-2 rounded-2xl border border-line bg-elevated/50 text-[14px] font-semibold text-text"
-                  >
-                    <span className="text-[16px]" aria-hidden>G</span> Google
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toast('Coming soon')}
-                    className="flex h-[52px] items-center justify-center gap-2 rounded-2xl border border-line bg-elevated/50 text-[14px] font-semibold text-text"
-                  >
-                    <span className="text-[16px]" aria-hidden></span> Apple
-                  </button>
-                </div>
-
                 <p className="mt-5 text-center text-[13.5px] text-muted">
                   New to SportsSync?{' '}
                   <Link to="/register" className="font-semibold text-primary">
                     Create account
                   </Link>
                 </p>
-
-                <button
-                  type="button"
-                  onClick={fillDemo}
-                  className="mt-4 w-full rounded-2xl border border-dashed border-line bg-elevated/40 px-4 py-2.5 text-left text-[12px] text-muted hover:border-primary/50"
-                >
-                  Demo: <span className="font-semibold text-text">noellouis2005@gmail.com</span> / <span className="font-semibold text-text">12345</span>{' '}
-                  <span className="text-primary">tap to fill</span>
-                </button>
               </motion.div>
             )}
           </AnimatePresence>
