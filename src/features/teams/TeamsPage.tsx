@@ -18,7 +18,7 @@ import { avatarForUser } from '../../core/utils/avatar';
 
 const teamStatusTone = { open: 'success', full: 'warning', closed: 'neutral' } as const;
 
-export function TeamCard({ team, onJoin }: { team: TeamWithExtras; onJoin: () => void }) {
+export function TeamCard({ team, onJoin, onView, viewerUserId }: { team: TeamWithExtras; onJoin: () => void; onView?: () => void; viewerUserId?: string }) {
   const shown = team.members.slice(0, 4);
   const captain = db.users.find((user) => user.user_id === team.captain_user_id);
   const captainPlayer = db.players.find((player) => player.user_id === team.captain_user_id);
@@ -68,7 +68,10 @@ export function TeamCard({ team, onJoin }: { team: TeamWithExtras; onJoin: () =>
         <div className="h-full rounded-full bg-primary-gradient" style={{ width: `${pct}%` }} />
       </div>
 
-      {team.team_status === 'open' && (
+      <button type="button" onClick={onView} className="mt-3 w-full rounded-xl border border-line px-3 py-2 text-[12.5px] font-semibold text-text min-h-10">
+        {viewerUserId === team.captain_user_id ? 'Manage team' : 'View team details'}
+      </button>
+      {team.team_status === 'open' && viewerUserId !== team.captain_user_id && !team.members.some((member) => member.user_id === viewerUserId) && (
         <PrimaryButton
           variant="ghost"
           icon={Users}
@@ -163,7 +166,7 @@ export function TeamsPage() {
         />
       ) : (
         <div className="space-y-3">
-          {filtered.map((t) => <TeamCard key={t.team_id} team={t} onJoin={() => setJoinTeam(t)} />)}
+          {filtered.map((t) => <TeamCard key={t.team_id} team={t} viewerUserId={user?.user_id} onView={() => navigate(`/home/teams/${t.team_id}`)} onJoin={() => setJoinTeam(t)} />)}
         </div>
       )}
 

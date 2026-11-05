@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ArrowLeft, UserPlus, Crown, CalendarCheck } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useTeam, useRespondToRequest, useSendJoinRequest, useMyBookings } from '../../data/store/hooks';
+import { useTeam, useRespondToRequest, useSendJoinRequest, useMyBookings, useRemoveTeamMember, useUpdateTeam } from '../../data/store/hooks';
 import { useAuthStore } from '../../data/store/authStore';
 import { db } from '../../data/repositories/db';
 import { formatDateShort, inr } from '../../core/utils/format';
@@ -34,16 +34,23 @@ export function TeamDetailPage() {
   const [joinOpen, setJoinOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [tab, setTab] = useState<'members' | 'requests'>('members');
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editSize, setEditSize] = useState(2);
 
   const { data: team, isLoading, isError, refetch, error } = useTeam(id);
   const { data: bookings = [] } = useMyBookings();
   const sendRequest = useSendJoinRequest();
   const respond = useRespondToRequest();
+  const removeMember = useRemoveTeamMember();
+  const updateTeam = useUpdateTeam();
 
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-48 w-full rounded-[20px]" /><Skeleton className="h-6 w-1/2" /><Skeleton className="h-40 w-full" /></div>;
   if (isError || !team) return <ErrorState message={error?.message ?? 'Team not found'} onRetry={() => refetch()} />;
 
   const isMember = team.members.some((m) => m.user_id === user?.user_id);
+  const isCaptain = team.captain_user_id === user?.user_id;
   const teamBookings = bookings.filter((booking) => booking.team_id === team.team_id && (booking.booking_status === 'pending' || booking.booking_status === 'confirmed'));
   const captainName = nameFor(team.captain_user_id);
 
@@ -60,12 +67,30 @@ export function TeamDetailPage() {
   };
 
   const respondTo = async (requestId: string, accept: boolean) => {
+    if (!user || !isCaptain) return;
     try {
-      await respond.mutateAsync({ requestId, accept });
+      await respond.mutateAsync({ requestId, accept, actorUserId: user.user_id });
       toast.success(accept ? 'Player added to the team!' : 'Request rejected');
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Action failed');
     }
+  };
+
+  const remove = async (memberUserId: string) => {
+    if (!user || !isCaptain) return;
+    try {
+      await removeMember.mutateAsync({ teamId: team.team_id, memberUserId, actorUserId: user.user_id });
+      toast.success('Player removed from team');
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Could not remove player'); }
+  };
+
+  const saveTeam = async () => {
+    if (!user || !isCaptain) return;
+    try {
+      await updateTeam.mutateAsync({ teamId: team.team_id, actorUserId: user.user_id, patch: { team_name: editName, description: editDescription, required_players: editSize } });
+      setEditOpen(false);
+      toast.success('Team updated');
+    } catch (e) { toast.error(e instanceof Error ? e.message : 'Could not update team'); }
   };
 
   return (
@@ -91,6 +116,7 @@ export function TeamDetailPage() {
       </div>
 
       <div className="space-y-5 px-5 pt-4">
+        {isCaptain && <PrimaryButton variant="outline" full onClick={() => { setEditName(team.team_name); setEditDescription(team.description); setEditSize(team.required_players); setEditOpen(true); }}>Edit team details</PrimaryButton>}
         <p className="text-[14px] leading-relaxed text-muted">{team.description}</p>
 
         {isMember && teamBookings.length > 0 && <div className="space-y-2">
@@ -113,7 +139,7 @@ export function TeamDetailPage() {
 
         {/* Tabs */}
         <div className="flex gap-1 rounded-2xl bg-surface/70 p-1" role="tablist">
-          {(['members', 'requests'] as const).map((t) => (
+          {(isCaptain ? ['members', 'requests'] as const : ['members'] as const).map((t) => (
             <button
               key={t}
               role="tab"
@@ -143,6 +169,7 @@ export function TeamDetailPage() {
                 <StatusChip tone={m.member_role === 'captain' ? 'primary' : 'neutral'}>
                   {m.member_role}
                 </StatusChip>
+                {isCaptain && m.member_role !== 'captain' && <button type="button" onClick={() => remove(m.user_id)} disabled={removeMember.isPending} className="text-[11px] font-semibold text-danger disabled:opacity-50" aria-label={`Remove ${nameFor(m.user_id)}`}>Remove</button>}
               </div>
             ))}
           </div>
@@ -210,6 +237,14 @@ export function TeamDetailPage() {
           <PrimaryButton size="lg" full loading={sendRequest.isPending} onClick={send}>
             Send request
           </PrimaryButton>
+        </div>
+      </BottomSheet>
+      <BottomSheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit team details">
+        <div className="space-y-3 pb-4">
+          <label className="block text-[12px] text-muted">Team name<input value={editName} onChange={(e) => setEditName(e.target.value)} className="mt-1 w-full rounded-xl border border-line bg-elevated p-3 text-text" /></label>
+          <label className="block text-[12px] text-muted">Description<textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={3} className="mt-1 w-full rounded-xl border border-line bg-elevated p-3 text-text" /></label>
+          <label className="block text-[12px] text-muted">Maximum players<input type="number" min={team.member_count} max={22} value={editSize} onChange={(e) => setEditSize(Number(e.target.value))} className="mt-1 w-full rounded-xl border border-line bg-elevated p-3 text-text" /></label>
+          <PrimaryButton full loading={updateTeam.isPending} onClick={saveTeam}>Save changes</PrimaryButton>
         </div>
       </BottomSheet>
     </div>
