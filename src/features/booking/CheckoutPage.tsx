@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +10,7 @@ import { clsx } from 'clsx';
 import { useAuthStore } from '../../data/store/authStore';
 import { useTurfSlots, useTurf, useCreateBooking, useTeams } from '../../data/store/hooks';
 import { db } from '../../data/repositories/db';
-import { CONVENIENCE_FEE, GST_RATE } from '../../data/repositories/bookingRepository';
+import { CONVENIENCE_FEE, GST_RATE, teamShareAmount } from '../../data/repositories/bookingRepository';
 import { inr, formatDateLong, formatTime } from '../../core/utils/format';
 import { PrimaryButton } from '../../core/components/PrimaryButton';
 import { GlassCard } from '../../core/components/GlassCard';
@@ -34,46 +34,48 @@ export function CheckoutPage() {
   const firstSlot = db.slots.find((s) => s.slot_id === slotIds[0]);
   const { data: turf } = useTurf(firstSlot?.turf_id);
   const { data: slots = [], isLoading: slotsLoading, isError: slotsError, refetch: retrySlots } = useTurfSlots(firstSlot?.turf_id, firstSlot?.slot_date ?? '', firstSlot?.sport_id);
-  const { data: myTeams = [] } = useTeams();
+  const { data: myTeams = [], isLoading: teamsLoading } = useTeams();
 
   const [method, setMethod] = useState<PaymentMethod>('upi');
   const requestedPlayers = Number(new URLSearchParams(location.search).get('players'));
-  const [playerCount, setPlayerCount] = useState(Number.isInteger(requestedPlayers) && requestedPlayers >= 1 && requestedPlayers <= 22 ? requestedPlayers : 1);
-  const [payMode, setPayMode] = useState<'share' | 'full'>('share');
-  const [teamId, setTeamId] = useState('');
+  const requestedTeamId = new URLSearchParams(location.search).get('teamId') ?? '';
+  const [manualPlayerCount, setManualPlayerCount] = useState(Number.isInteger(requestedPlayers) && requestedPlayers >= 1 && requestedPlayers <= 22 ? requestedPlayers : 1);
+  const [manualPayMode, setManualPayMode] = useState<'share' | 'full'>('share');
+  const [teamId, setTeamId] = useState(requestedTeamId);
   const [promo, setPromo] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [processing, setProcessing] = useState(false);
   const createBooking = useCreateBooking();
+  const captainTeams = myTeams.filter((team) => team.captain_user_id === user?.user_id && team.sport_id === firstSlot?.sport_id);
+  const selectedTeam = captainTeams.find((team) => team.team_id === teamId);
+  const playerCount = selectedTeam?.member_count ?? manualPlayerCount;
+  const payMode = selectedTeam ? 'share' : manualPayMode;
 
   const selectedSlots = slots.filter((s) => slotIds.includes(s.slot_id));
   const baseTotal = selectedSlots.reduce((sum, s) => sum + s.price, 0);
   const gst = Math.round(CONVENIENCE_FEE * GST_RATE);
   const promoDiscount = promoApplied ? Math.round((baseTotal + CONVENIENCE_FEE + gst) * 0.2) : 0;
   const total = baseTotal + CONVENIENCE_FEE + gst - promoDiscount;
-  const perPlayer = Math.ceil(total / playerCount);
-  const rounding = perPlayer * playerCount - total;
-  const myShare = payMode === 'full' ? total : perPlayer;
+  const perPlayer = selectedTeam ? Math.ceil(total * 100 / playerCount) / 100 : Math.ceil(total / playerCount);
+  const rounding = selectedTeam ? 0 : perPlayer * playerCount - total;
+  const myShare = payMode === 'full' ? total : selectedTeam && user ? teamShareAmount({ booking_amount: total, participant_user_ids: selectedTeam.members.map((member) => member.user_id) }, user.user_id) : perPlayer;
 
-  const teamMembers = useMemo(() => {
-    if (!teamId) return [];
-    const t = myTeams.find((x) => x.team_id === teamId);
-    return t?.members.map((m) => {
+  const teamMembers = selectedTeam?.members.map((m) => {
       const u = db.users.find((x) => x.user_id === m.user_id);
       return { name: u?.full_name ?? 'Player', userId: m.user_id, captain: m.member_role === 'captain' };
     }) ?? [];
-  }, [teamId, myTeams]);
 
   const sportName = db.sports.find((s) => s.sport_id === firstSlot?.sport_id)?.sport_name ?? '';
 
   const pay = async () => {
-    if (!firstSlot || !player || selectedSlots.length !== slotIds.length) return;
+    if (!firstSlot || !player || selectedSlots.length !== slotIds.length || (teamId && !selectedTeam)) return;
     setProcessing(true);
     try {
       const booking = await createBooking.mutateAsync({
         slot_ids: slotIds,
         player_id: player.player_id,
         player_count: playerCount,
+        team_id: selectedTeam?.team_id,
         payment_method: method,
         pay_mode: payMode,
         discount: promoDiscount,
@@ -136,8 +138,9 @@ export function CheckoutPage() {
             <Users size={16} className="text-primary" aria-hidden /> Players
           </p>
           <div className="flex items-center gap-3">
+            {!selectedTeam ? <>
             <button
-              onClick={() => setPlayerCount((c) => Math.max(1, c - 1))}
+              onClick={() => setManualPlayerCount((c) => Math.max(1, c - 1))}
               aria-label="Fewer players"
               className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-elevated"
             >
@@ -145,43 +148,41 @@ export function CheckoutPage() {
             </button>
             <span className="w-6 text-center font-display text-[17px] font-bold text-text" aria-live="polite">{playerCount}</span>
             <button
-              onClick={() => setPlayerCount((c) => Math.min(22, c + 1))}
+              onClick={() => setManualPlayerCount((c) => Math.min(22, c + 1))}
               aria-label="More players"
               className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-elevated"
             >
               <Plus size={15} className="text-text" aria-hidden />
             </button>
+            </> : <span className="text-[13px] font-semibold text-primary">{playerCount} active members</span>}
           </div>
         </div>
 
-        {myTeams.length > 0 && (
+        {captainTeams.length > 0 && (
           <select
             value={teamId}
-            onChange={(e) => {
-              setTeamId(e.target.value);
-              const t = myTeams.find((x) => x.team_id === e.target.value);
-              if (t) setPlayerCount(Math.min(22, Math.max(1, t.member_count)));
-            }}
+            onChange={(e) => setTeamId(e.target.value)}
             aria-label="Pick from my team"
             className="h-11 w-full rounded-2xl border border-line bg-elevated px-3.5 text-[13.5px] text-text focus:outline-none focus:ring-[1.5px] focus:ring-primary"
           >
             <option value="">Pick from my team (optional)</option>
-            {myTeams.map((t) => (
+            {captainTeams.map((t) => (
               <option key={t.team_id} value={t.team_id}>{t.team_name} ({t.member_count} players)</option>
             ))}
           </select>
         )}
+        {teamId && !teamsLoading && !selectedTeam && <p role="alert" className="text-[12px] text-danger">This team cannot book the selected sport. Go back and choose a matching turf.</p>}
 
         {playerCount > 1 && (
           <div className="space-y-2.5">
             {/* Segmented toggle */}
-            <div className="grid grid-cols-2 gap-1 rounded-2xl bg-elevated p-1" role="radiogroup" aria-label="Payment mode">
+            {!selectedTeam && <div className="grid grid-cols-2 gap-1 rounded-2xl bg-elevated p-1" role="radiogroup" aria-label="Payment mode">
               {(['share', 'full'] as const).map((m) => (
                 <button
                   key={m}
                   role="radio"
                   aria-checked={payMode === m}
-                  onClick={() => setPayMode(m)}
+                  onClick={() => setManualPayMode(m)}
                   className={clsx(
                     'rounded-xl px-3 py-2.5 text-[12px] font-semibold transition-colors min-h-10',
                     payMode === m ? 'bg-primary text-on-primary' : 'text-muted',
@@ -190,7 +191,7 @@ export function CheckoutPage() {
                   {m === 'share' ? 'Pay my share' : 'Pay full & collect'}
                 </button>
               ))}
-            </div>
+            </div>}
 
             {/* Split summary */}
             <div className="rounded-2xl border border-primary/25 bg-primary/5 p-3.5">
@@ -224,7 +225,7 @@ export function CheckoutPage() {
                   <li key={m.userId} className="flex items-center justify-between text-[13px]">
                     <span className="text-muted">{m.name} {m.captain && <span className="text-primary text-[10px] font-bold">(captain)</span>}</span>
                     <span className={clsx('rounded-full px-2 py-0.5 text-[10.5px] font-bold', m.userId === user?.user_id ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning')}>
-                      {m.userId === user?.user_id ? 'Paid' : 'Pending'} · {inr(perPlayer)}
+                      {m.userId === user?.user_id ? 'Paying now' : 'Pending'} · {inr(teamShareAmount({ booking_amount: total, participant_user_ids: teamMembers.map((member) => member.userId) }, m.userId))}
                     </span>
                   </li>
                 ))
@@ -296,7 +297,7 @@ export function CheckoutPage() {
           <p className="text-[11px] text-muted">You pay</p>
           <p className="font-display text-[19px] font-bold text-primary">{inr(myShare)}</p>
         </div>
-        <PrimaryButton size="lg" disabled={slotsLoading || slotsError || selectedSlots.length !== slotIds.length} loading={createBooking.isPending} onClick={pay} className="min-w-[170px]">
+        <PrimaryButton size="lg" disabled={slotsLoading || slotsError || teamsLoading || (teamId !== '' && !selectedTeam) || selectedSlots.length !== slotIds.length} loading={createBooking.isPending} onClick={pay} className="min-w-[170px]">
           Pay {inr(myShare)}
         </PrimaryButton>
       </div>

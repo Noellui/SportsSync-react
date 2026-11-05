@@ -24,7 +24,9 @@ const sportImageMap: Record<string, string> = {
 
 function enrich(t: Team): TeamWithExtras {
   const sport = db.sports.find((s) => s.sport_id === t.sport_id);
-  const members = db.teamMembers.filter((m) => m.team_id === t.team_id && m.membership_status === 'active');
+  const members = db.teamMembers.filter((member, index, all) =>
+    member.team_id === t.team_id && member.membership_status === 'active'
+    && all.findIndex((other) => other.team_id === t.team_id && other.membership_status === 'active' && other.user_id === member.user_id) === index);
   const captain = members.find((m) => m.member_role === 'captain');
   const pending = db.joinRequests.filter((r) => r.team_id === t.team_id && r.request_status === 'pending');
   return {

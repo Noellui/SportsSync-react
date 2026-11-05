@@ -9,11 +9,14 @@ import { ErrorState } from '../../core/components/ErrorState';
 import { EmptyState } from '../../core/components/EmptyState';
 import { PrimaryButton } from '../../core/components/PrimaryButton';
 import { clsx } from 'clsx';
+import { db } from '../../data/repositories/db';
 
 export function TurfListPage() {
   const location = useLocation();
   const state = (location.state ?? {}) as { sportId?: string; sportName?: string };
-  const [sportId, setSportId] = useState<string | null>(state.sportId ?? null);
+  const teamId = new URLSearchParams(location.search).get('teamId');
+  const teamSportId = db.teams.find((team) => team.team_id === teamId)?.sport_id;
+  const [sportId, setSportId] = useState<string | null>(teamSportId ?? state.sportId ?? null);
   const [query, setQuery] = useState('');
 
   const { data: sports = [] } = useSports();
@@ -41,7 +44,7 @@ export function TurfListPage() {
         </div>
       </header>
 
-      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+      {!teamSportId && <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
         <button
           onClick={() => setSportId(null)}
           className={clsx(
@@ -63,7 +66,7 @@ export function TurfListPage() {
             {s.sport_name}
           </button>
         ))}
-      </div>
+      </div>}
 
       {isLoading ? (
         <div className="space-y-3">

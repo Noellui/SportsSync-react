@@ -285,7 +285,7 @@ export const seedTeamMembers: TeamMember[] = [
   { team_member_id: 'tm_2_3', team_id: 'team_2', user_id: 'u_noel', member_role: 'member', joined_at: iso(subDays(now, 15)), membership_status: 'active' },
   { team_member_id: 'tm_3_1', team_id: 'team_3', user_id: 'u_p2', member_role: 'captain', joined_at: iso(subDays(now, 60)), membership_status: 'active' },
   { team_member_id: 'tm_3_2', team_id: 'team_3', user_id: 'u_p6', member_role: 'member', joined_at: iso(subDays(now, 55)), membership_status: 'active' },
-  { team_member_id: 'tm_3_3', team_id: 'team_3', user_id: 'u_p2', member_role: 'member', joined_at: iso(subDays(now, 50)), membership_status: 'active' },
+  { team_member_id: 'tm_3_3', team_id: 'team_3', user_id: 'u_p1', member_role: 'member', joined_at: iso(subDays(now, 50)), membership_status: 'active' },
   { team_member_id: 'tm_3_4', team_id: 'team_3', user_id: 'u_p4', member_role: 'member', joined_at: iso(subDays(now, 45)), membership_status: 'active' },
   { team_member_id: 'tm_3_5', team_id: 'team_3', user_id: 'u_p5', member_role: 'member', joined_at: iso(subDays(now, 40)), membership_status: 'active' },
   { team_member_id: 'tm_3_6', team_id: 'team_3', user_id: 'u_p3', member_role: 'member', joined_at: iso(subDays(now, 35)), membership_status: 'active' },

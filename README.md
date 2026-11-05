@@ -80,6 +80,12 @@ Each booking has a matching mock payment. The examples cover UPI, card, and wall
 
 Three team join requests are also seeded. Venue photos are local files in `public/images`; their credits are in `public/images/CREDITS.md`.
 
+### Team booking demo
+
+The team captain opens a team and chooses **Book a turf for team members**. Checkout uses the number of active team members, including the captain, and splits the price into individual shares. The captain pays their own share when placing the booking. Every member who belonged to the team at booking time can then open **Team bookings** on the team page or **My bookings** and pay their share once. The booking becomes confirmed when all shares are paid. If the remaining shares are not paid within the 10-minute slot hold, the booking is cancelled and the demo payments are marked refunded.
+
+To try another member's payment, sign out and sign in as that seeded player in the **same browser**. The demo uses browser local storage, so team bookings and payments do not sync across devices. No real money is transferred.
+
 ### Resetting the demo data
 
 Changes are saved in browser local storage under `sportssync_db_v1`. To restore the original seed, remove that key in your browser's developer tools and reload the app. Remove `sportssync_session` too if you also want to sign out. Mock account passwords are stored as plain values for this local demo.
