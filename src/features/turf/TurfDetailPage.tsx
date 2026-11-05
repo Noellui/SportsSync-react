@@ -186,7 +186,7 @@ export function TurfDetailPage() {
   };
 
   return (
-    <div className="pb-28">
+    <div className="pb-52 md:pb-28">
       {/* Hero carousel */}
       <div className="relative">
         <div
@@ -293,7 +293,7 @@ export function TurfDetailPage() {
       </div>
 
       {/* Sticky bar */}
-      <div className="fixed bottom-4 left-4 right-4 z-30 flex items-center justify-between gap-3 rounded-[24px] border border-white/10 bg-surface/90 p-3 backdrop-blur-[14px] md:left-auto md:right-8 md:w-[420px]">
+      <div className="fixed bottom-28 left-4 right-4 z-30 flex items-center justify-between gap-3 rounded-[24px] border border-white/10 bg-surface/90 p-3 backdrop-blur-[14px] md:bottom-4 md:left-auto md:right-8 md:w-[420px]">
         <div>
           <p className="text-[11px] text-muted">From</p>
           <p className="font-display text-[18px] font-bold text-primary">{inr(turf.min_price)} <span className="text-[12px] font-medium text-muted">/ hr</span></p>

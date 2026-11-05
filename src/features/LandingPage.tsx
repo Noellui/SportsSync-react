@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, MapPin } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Download, MapPin, Smartphone } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Logo } from '../core/components/Logo';
 
@@ -16,6 +16,7 @@ const sports = [
 const quickLinks = [
   { label: 'What we offer', href: '#services' },
   { label: 'Sports', href: '#sports' },
+  { label: 'Download', href: '#download' },
   { label: 'About us', href: '#about' },
   { label: 'Location', href: '#location' },
 ];
@@ -24,15 +25,18 @@ export function LandingPage() {
   const [selectedSport, setSelectedSport] = useState(sports[0]);
   const reduceMotion = useReducedMotion();
   const reveal = reduceMotion ? {} : { initial: { opacity: 0, y: 28 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, amount: 0.15 }, transition: { duration: 0.55, ease: 'easeOut' as const } };
+  const apkUrl = import.meta.env.VITE_APK_URL?.trim();
 
   return (
     <div className="min-h-[100svh] bg-bg text-text">
-      <header className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-5 py-5 md:px-10 lg:px-16">
-        <a href="#top" aria-label="SportsSync home"><Logo size={38} /></a>
-        <nav aria-label="Main navigation" className="hidden items-center gap-7 text-sm font-medium text-muted md:flex">
-          {quickLinks.slice(0, 3).map((item) => <a key={item.href} href={item.href} className="hover:text-text focus-visible:text-text">{item.label}</a>)}
+      <header className="sticky top-0 z-50 bg-bg/95">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-5 py-3 md:px-10 lg:px-16">
+          <a href="#top" aria-label="SportsSync home"><Logo size={38} /></a>
+          <Link to="/login" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line px-5 text-sm font-semibold text-text hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">Sign in <ArrowUpRight size={16} aria-hidden /></Link>
+        </div>
+        <nav aria-label="Main navigation" className="no-scrollbar mx-auto flex w-full max-w-[1440px] gap-6 overflow-x-auto whitespace-nowrap px-5 pb-3 text-sm font-medium text-muted md:gap-8 md:px-10 lg:px-16">
+          {quickLinks.map((item) => <a key={item.href} href={item.href} className="shrink-0 py-1 hover:text-text focus-visible:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">{item.label}</a>)}
         </nav>
-        <Link to="/login" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line px-5 text-sm font-semibold text-text hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">Sign in <ArrowUpRight size={16} aria-hidden /></Link>
       </header>
 
       <main id="top">
@@ -46,7 +50,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="services" className="scroll-mt-8 bg-surface py-20 md:py-28">
+        <section id="services" className="scroll-mt-24 bg-surface py-20 md:py-28">
           <div className="mx-auto max-w-[1440px] px-5 md:px-10 lg:px-16">
             <motion.div {...reveal} className="grid gap-8 lg:grid-cols-2 lg:gap-20">
               <h2 className="font-display text-[clamp(2.5rem,5vw,5rem)] font-semibold leading-[1] tracking-[-0.045em]">One place for the whole game.</h2>
@@ -66,7 +70,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="sports" className="scroll-mt-8 mx-auto grid max-w-[1440px] gap-10 px-5 py-20 md:px-10 md:py-28 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20 lg:px-16">
+        <section id="sports" className="scroll-mt-24 mx-auto grid max-w-[1440px] gap-10 px-5 py-20 md:px-10 md:py-28 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20 lg:px-16">
           <motion.div {...reveal}>
             <h2 className="font-display text-[clamp(2.5rem,5vw,5rem)] font-semibold leading-[1] tracking-[-0.045em]">Pick your sport.</h2>
             <p className="mt-5 max-w-[440px] text-base leading-7 text-muted">Select a sport to see what you can play through SportsSync.</p>
@@ -83,7 +87,27 @@ export function LandingPage() {
           </motion.div>
         </section>
 
-        <section id="about" className="scroll-mt-8 bg-elevated py-20 md:py-28">
+        <section id="download" className="scroll-mt-24 bg-surface py-20 md:py-28">
+          <div className="mx-auto grid max-w-[1440px] gap-10 px-5 md:px-10 lg:grid-cols-2 lg:items-end lg:gap-20 lg:px-16">
+            <motion.div {...reveal}>
+              <Smartphone size={36} className="mb-6 text-primary" aria-hidden />
+              <h2 className="font-display text-[clamp(2.5rem,5vw,5rem)] font-semibold leading-[1] tracking-[-0.045em]">Download the app.</h2>
+            </motion.div>
+            <motion.div {...reveal} className="lg:pb-1">
+              <p className="max-w-[520px] text-base leading-7 text-muted md:text-lg">Take bookings and team plans with you. The Android APK will be available here when the app build is ready.</p>
+              {apkUrl ? (
+                <a href={apkUrl} download className="mt-8 inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-primary px-7 text-sm font-bold text-on-primary hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"><Download size={18} aria-hidden /> Download APK</a>
+              ) : (
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <span className="inline-flex min-h-14 items-center rounded-full bg-elevated px-7 text-sm font-bold text-muted">APK coming soon</span>
+                  <Link to="/register" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary hover:underline">Use the web app now <ArrowUpRight size={17} aria-hidden /></Link>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </section>
+
+        <section id="about" className="scroll-mt-24 bg-elevated py-20 md:py-28">
           <motion.div {...reveal} className="mx-auto grid max-w-[1440px] gap-10 px-5 md:px-10 lg:grid-cols-2 lg:items-center lg:gap-20 lg:px-16">
             <img src="/images/turf_6.jpg" alt="Sports turf ready for a game" loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />
             <div>
@@ -94,7 +118,7 @@ export function LandingPage() {
           </motion.div>
         </section>
 
-        <section id="location" className="scroll-mt-8 mx-auto grid max-w-[1440px] gap-9 px-5 py-20 md:px-10 md:py-28 lg:grid-cols-2 lg:gap-20 lg:px-16">
+        <section id="location" className="scroll-mt-24 mx-auto grid max-w-[1440px] gap-9 px-5 py-20 md:px-10 md:py-28 lg:grid-cols-2 lg:gap-20 lg:px-16">
           <motion.h2 {...reveal} className="font-display text-[clamp(2.5rem,5vw,5rem)] font-semibold leading-[1] tracking-[-0.045em]">Made for Manjalpur.</motion.h2>
           <motion.div {...reveal} className="self-end">
             <p className="flex items-start gap-3 text-lg font-semibold"><MapPin size={23} className="mt-1 shrink-0 text-primary" aria-hidden /> Court Lane, Manjalpur, Vadodara, Gujarat 390011</p>
