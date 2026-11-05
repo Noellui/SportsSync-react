@@ -1,0 +1,49 @@
+@import '@fontsource/outfit/400.css';
+@import '@fontsource/outfit/500.css';
+@import '@fontsource/outfit/600.css';
+@import '@fontsource/outfit/700.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  body {
+    @apply bg-bg text-text font-body antialiased;
+    overscroll-behavior-y: none;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.5px;
+    line-height: 1.3;
+  }
+  p {
+    line-height: 1.5;
+  }
+  button {
+    font-family: 'Inter', sans-serif;
+  }
+  ::selection {
+    background: rgba(182, 255, 59, 0.3);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #26362F transparent;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
