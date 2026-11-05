@@ -1,0 +1,10 @@
+{
+  "name": "SportsSync",
+  "short_name": "SportsSync",
+  "description": "Book sports turfs and build your team",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#0B1210",
+  "theme_color": "#0B1210",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
